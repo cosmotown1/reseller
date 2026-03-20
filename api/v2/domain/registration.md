@@ -34,21 +34,6 @@ All APIs follow a consistent structure:
 
 ---
 
-# Domain Check
-
-## Request
-```http
-POST /v2/domain/check
-```
-
-```json
-{
-  "domain": "example.com"
-}
-```
-
----
-
 # Domain Registration
 
 ## 1. Async Registration (Recommended)
