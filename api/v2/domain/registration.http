@@ -13,18 +13,6 @@ x-api-key: {{token}}
 ###
 GET {{baseUrl}}/health
 
-########################################
-### DOMAIN CHECK
-########################################
-
-###
-POST {{baseUrl}}/v2/domain/check
-Content-Type: {{contentType}}
-x-api-key: {{token}}
-
-{
-  "domain": "example.com"
-}
 
 ########################################
 ### REGISTER (ASYNC - SINGLE)
