@@ -1,0 +1,172 @@
+@baseUrl = https://cosmotown.com/api/reseller
+@token = your_api_key_here
+@contentType = application/json
+
+########################################
+### REGISTER (ASYNC - BULK)
+########################################
+
+###
+POST {{baseUrl}}/v2/domain/register HTTP/1.1
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "items": [
+    {
+      "domain": "example13303.com",
+      "years": 1
+    },
+    {
+      "domain": "example13302.com",
+      "years": 1,
+
+      "ns": [
+        "ndns1.cosmotown.com",
+        "ndns2.cosmotown.com"
+        ]
+    }
+  ]
+}
+
+# HTTP/1.1 200 OK
+# x-ratelimit-limit: 600
+# x-ratelimit-remaining: 594
+# x-ratelimit-reset: 15
+# content-type: application/json; charset=utf-8
+# content-length: 82
+# Date: Fri, 03 Apr 2026 16:16:34 GMT
+# Connection: close
+
+# {
+#   "success": true,
+#   "data": {
+#     "validationResult": {},
+#     "status": "processing",
+#     "jobId": "1"
+#   }
+# }
+
+########################################
+### GET JOB (ASYNC - BULK)
+########################################
+GET {{baseUrl}}/v2/domain/register/jobs/1 HTTP/1.1
+x-api-key: {{token}}
+
+# HTTP/1.1 200 OK
+# x-ratelimit-limit: 600
+# x-ratelimit-remaining: 598
+# x-ratelimit-reset: 60
+# content-type: application/json; charset=utf-8
+# content-length: 2257
+# Date: Fri, 03 Apr 2026 16:16:56 GMT
+# Connection: close
+
+# {
+#   "jobId": "1",
+#   "state": "completed",
+#   "result": [
+#     {
+#       "success": true,
+#       "data": {
+#         "id": "108",
+#         "customer_id": "2956",
+#         "reseller_customer_id": "1",
+#         "domain": "example133069.com",
+#         "action": "createDomain",
+#         "status": "completed",
+#         "processed": false,
+#         "price": "7.10",
+#         "years": 1,
+#         "total": "7.10",
+#         "domain_created": "2026-04-03T16:16:34Z",
+#         "domain_expires": "2027-04-03T16:16:34Z",
+#         "created": "2026-04-03T10:46:32.640Z",
+#         "updated": "2026-04-03T10:46:32.640Z",
+#         "payment_status": "completed",
+#         "enable_private_whois": null,
+#         "lock_domain": null,
+#         "enable_auto_billing": null,
+#         "ns": null,
+#         "customer_product_id": null,
+#         "order_id": null,
+#         "invoice_id": null
+#       },
+#       "result": {
+#         "code": 1000,
+#         "message": "Command completed successfully",
+#         "description": "Command completed successfully"
+#       },
+#       "postProcessData": {
+#         "reseller_order_id": "108",
+#         "customer_id": "2956",
+#         "reseller_id": 1,
+#         "domain": "example133069.com",
+#         "years": 1,
+#         "total_price": "7.10",
+#         "price": "7.10",
+#         "payment_status": "completed",
+#         "domain_created": "2026-04-03T16:16:34Z",
+#         "domain_expires": "2027-04-03T16:16:34Z",
+#         "ns": [],
+#         "contacts": {},
+#         "item_num": 1,
+#         "options": null
+#       }
+#     },
+#     {
+#       "success": true,
+#       "data": {
+#         "id": "109",
+#         "customer_id": "2956",
+#         "reseller_customer_id": "1",
+#         "domain": "example133049.com",
+#         "action": "createDomain",
+#         "status": "completed",
+#         "processed": false,
+#         "price": "7.10",
+#         "years": 1,
+#         "total": "7.10",
+#         "domain_created": "2026-04-03T16:16:39Z",
+#         "domain_expires": "2027-04-03T16:16:39Z",
+#         "created": "2026-04-03T10:46:37.713Z",
+#         "updated": "2026-04-03T10:46:37.713Z",
+#         "payment_status": "completed",
+#         "enable_private_whois": null,
+#         "lock_domain": null,
+#         "enable_auto_billing": null,
+#         "ns": null,
+#         "customer_product_id": null,
+#         "order_id": null,
+#         "invoice_id": null
+#       },
+#       "result": {
+#         "code": 1000,
+#         "message": "Command completed successfully",
+#         "description": "Command completed successfully"
+#       },
+#       "postProcessData": {
+#         "reseller_order_id": "109",
+#         "customer_id": "2956",
+#         "reseller_id": 1,
+#         "domain": "example133049.com",
+#         "years": 1,
+#         "total_price": "7.10",
+#         "price": "7.10",
+#         "payment_status": "completed",
+#         "domain_created": "2026-04-03T16:16:39Z",
+#         "domain_expires": "2027-04-03T16:16:39Z",
+#         "ns": [
+#           "ndns1.cosmotown.com",
+#           "ndns2.cosmotown.com"
+#         ],
+#         "contacts": {},
+#         "item_num": 2,
+#         "options": null
+#       }
+#     }
+#   ],
+#   "createdAt": 1775232994701,
+#   "processedAt": 1775232994704,
+#   "finishedAt": 1775233004497
+# }
