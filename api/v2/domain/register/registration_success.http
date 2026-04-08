@@ -3,111 +3,64 @@
 @contentType = application/json
 
 ########################################
+### HEALTH
+########################################
+
+###
+GET {{baseUrl}}/ping
+x-api-key: {{token}}
+
+###
+GET {{baseUrl}}/health
+
+
+########################################
 ### REGISTER (ASYNC - SINGLE)
 ########################################
 
-### register
-POST {{baseUrl}}/v2/domain/register HTTP/1.1
+###
+POST {{baseUrl}}/v2/domain/register
 Content-Type: {{contentType}}
 x-api-key: {{token}}
 
 {
-    "domain": "example1234875.com",
-    "years": 1
+  "domain": "example12393.com",
+  "years": 1
 }
 
-# HTTP/1.1 200 OK
-# x-ratelimit-limit: 600
-# x-ratelimit-remaining: 590
-# x-ratelimit-reset: 28
-# content-type: application/json; charset=utf-8
-# content-length: 82
-# Date: Fri, 03 Apr 2026 15:35:45 GMT
-# Connection: close
+###
+# Set jobId from response manually
+@jobId = 26
 
-# {
-#   "success": true,
-#   "data": {
-#     "validationResult": {},
-#     "status": "processing",
-#     "jobId": "1"
-#   }
-# }
-
-
-########################################
-### GET JOB (ASYNC - SINGLE)
-########################################
-
-GET {{baseUrl}}/v2/domain/register/jobs/1 HTTP/1.1
+###
+GET {{baseUrl}}/v2/domain/jobs/{{jobId}}
 x-api-key: {{token}}
 
-# HTTP/1.1 200 OK
-# x-ratelimit-limit: 600
-# x-ratelimit-remaining: 598
-# x-ratelimit-reset: 60
-# content-type: application/json; charset=utf-8
-# content-length: 1172
-# Date: Fri, 03 Apr 2026 15:49:54 GMT
-# Connection: close
+########################################
+### REGISTER (ASYNC - BULK)
+########################################
 
-# {
-#   "jobId": "1",
-#   "state": "completed",
-#   "result": [
-#     {
-#       "success": true,
-#       "data": {
-#         "id": "105",
-#         "customer_id": "2956",
-#         "reseller_customer_id": "1",
-#         "domain": "example1234875.com",
-#         "action": "createDomain",
-#         "status": "completed",
-#         "processed": false,
-#         "price": "7.10",
-#         "years": 1,
-#         "total": "7.10",
-#         "domain_created": "2026-04-03T15:47:43Z",
-#         "domain_expires": "2027-04-03T15:47:43Z",
-#         "created": "2026-04-03T10:17:41.933Z",
-#         "updated": "2026-04-03T10:17:41.933Z",
-#         "payment_status": "completed",
-#         "enable_private_whois": null,
-#         "lock_domain": null,
-#         "enable_auto_billing": null,
-#         "ns": null,
-#         "customer_product_id": null,
-#         "order_id": null,
-#         "invoice_id": null
-#       },
-#       "result": {
-#         "code": 1000,
-#         "message": "Command completed successfully",
-#         "description": "Command completed successfully"
-#       },
-#       "postProcessData": {
-#         "reseller_order_id": "105",
-#         "customer_id": "2956",
-#         "reseller_id": 1,
-#         "domain": "example1234875.com",
-#         "years": 1,
-#         "total_price": "7.10",
-#         "price": "7.10",
-#         "payment_status": "completed",
-#         "domain_created": "2026-04-03T15:47:43Z",
-#         "domain_expires": "2027-04-03T15:47:43Z",
-#         "ns": [],
-#         "contacts": {},
-#         "item_num": 1,
-#         "options": null
-#       }
-#     }
-#   ],
-#   "createdAt": 1775231263979,
-#   "processedAt": 1775231263982,
-#   "finishedAt": 1775231269604
-# }
+###
+POST {{baseUrl}}/v2/domain/register
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "domains": [
+    {
+      "domain": "example12387.com",
+      "years": 1
+    },
+    {
+      "domain": "example12388.com",
+      "years": 1,
+      "ns": [
+        "ns1.cosmotown.com",
+        "ns2.cosmotown.com"
+      ]
+    }
+  ]
+}
 
 ########################################
 ### REGISTER (LEGACY - OPTIONAL)
@@ -126,4 +79,3 @@ x-api-key: {{token}}
     }
   ]
 }
-
