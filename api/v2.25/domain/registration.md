@@ -19,7 +19,7 @@ https://cosmotown.com/api/reseller
 
 - `GET /health` (no auth)
 - `GET /ping`
-- `POST /v2/domain/check`
+- `POST /v2.25/domain/check`
 - `POST /v2.25/domain/register`
 - `GET /v2.25/domain/jobs/{jobId}`
 
@@ -76,7 +76,7 @@ x-api-key: YOUR_API_KEY
 ### Request
 
 ```http
-POST /v2/domain/check
+POST /v2.25/domain/check
 Content-Type: application/json
 x-api-key: YOUR_API_KEY
 
