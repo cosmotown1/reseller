@@ -1,0 +1,32 @@
+{
+  "request": {
+    "payload": {
+      "domain": "_123example.com"
+    }
+  },
+  "response": {
+    "success": false,
+    "status": 400,
+    "headers": {
+      "date": "Wed, 08 Apr 2026 08:24:20 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "60",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "596",
+      "x-ratelimit-reset": "60"
+    },
+    "body": {
+      "success": false,
+      "data": [],
+      "error": "No valid domains found"
+    },
+    "duration_ms": 295
+  },
+  "meta": {
+    "api": "check",
+    "case": "validation_error_case",
+    "timestamp": "2026-04-08T08:24:20.560Z"
+  }
+}
