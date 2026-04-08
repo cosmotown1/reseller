@@ -1,0 +1,97 @@
+@baseUrl = http://127.0.0.1:3080/api/reseller
+@contentType = application/json
+@token = your_api_key_here
+
+########################################
+### HEALTH (NO AUTH)
+########################################
+
+###
+GET {{baseUrl}}/health HTTP/1.1
+
+########################################
+### PING (API KEY REQUIRED)
+########################################
+
+###
+GET {{baseUrl}}/ping HTTP/1.1
+x-api-key: {{token}}
+
+########################################
+### CHECK
+########################################
+
+###
+POST {{baseUrl}}/v2/domain/check HTTP/1.1
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "domain": "example1123.com"
+}
+
+########################################
+### REGISTER V2.25 (ASYNC)
+########################################
+
+###
+POST {{baseUrl}}/v2.25/domain/register HTTP/1.1
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "domain": "example-doc-20260407-01.com",
+  "years": 1
+}
+
+########################################
+### REGISTER V2.25 (SYNC ERROR EXAMPLE)
+########################################
+
+###
+POST {{baseUrl}}/v2.25/domain/register HTTP/1.1
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "domain": "example1123.com",
+  "years": 1,
+  "sync": true
+}
+
+########################################
+### JOB V2.25 (CURRENT)
+########################################
+
+###
+GET {{baseUrl}}/v2.25/domain/jobs/216 HTTP/1.1
+x-api-key: {{token}}
+
+########################################
+### JOB V2 LEGACY ALIAS (COMPATIBILITY)
+########################################
+
+###
+GET {{baseUrl}}/v2/domain/register/jobs/216 HTTP/1.1
+x-api-key: {{token}}
+
+########################################
+### STATUS V2.25 (SINGLE)
+########################################
+
+###
+GET {{baseUrl}}/v2.25/domain/status/example1123.com HTTP/1.1
+x-api-key: {{token}}
+
+########################################
+### STATUS V2.25 (BULK)
+########################################
+
+###
+POST {{baseUrl}}/v2.25/domain/status HTTP/1.1
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "domains": ["example1123.com", "invalid_domain"]
+}
