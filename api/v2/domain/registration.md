@@ -1,7 +1,3 @@
-# Cosmotown Reseller API v2 (Legacy Compatibility)
-
-This document is a legacy compatibility reference.
-
 For all new integrations, use:
 - `api/v2.25/domain/registration.md`
 - `api/v2.25/domain/registration.http`
@@ -47,7 +43,7 @@ x-api-key: YOUR_API_KEY
 
 - v2 async register returns `success.data.status` + `success.data.jobId`
 - v2.25 async register returns top-level `status` + `jobId`
-- v2 job alias response may include legacy compatibility fields not present in v2.25
+- v2 job alias response may include compatibility fields not present in v2.25
 
 ## Migration Guidance
 

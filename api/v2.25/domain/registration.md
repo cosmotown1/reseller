@@ -292,4 +292,3 @@ x-api-key: YOUR_API_KEY
 
 - Local samples were captured from `http://127.0.0.1:3080/api/reseller` using `newtown_local_v2.http` flows on 2026-04-07.
 - For new integrations, use v2.25 registration and jobs endpoints.
-- Keep v2 legacy jobs alias only for backward compatibility.

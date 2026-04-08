@@ -1,0 +1,21 @@
+{
+  "name": "reseller",
+  "version": "1.0.0",
+  "description": "API documentation and other resources for resellers",
+  "main": "index.js",
+  "scripts": {
+  "test:api": "node api/v2/runner.js"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cosmotown1/reseller.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "axios": "^1.14.0",
+    "p-limit": "^7.3.0"
+  }
+}

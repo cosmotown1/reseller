@@ -1,0 +1,32 @@
+{
+  "request": {
+    "payload": {
+      "domains": "example23653.com"
+    }
+  },
+  "response": {
+    "success": false,
+    "status": 500,
+    "headers": {
+      "date": "Wed, 08 Apr 2026 08:24:20 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "92",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "599",
+      "x-ratelimit-reset": "60"
+    },
+    "body": {
+      "statusCode": 500,
+      "error": "Internal Server Error",
+      "message": "domains.map is not a function"
+    },
+    "duration_ms": 1251
+  },
+  "meta": {
+    "api": "check",
+    "case": "error_case",
+    "timestamp": "2026-04-08T08:24:20.261Z"
+  }
+}
