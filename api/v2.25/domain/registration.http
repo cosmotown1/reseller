@@ -1,4 +1,4 @@
-@baseUrl = http://127.0.0.1:3080/api/reseller
+@baseUrl = https://cosmotown.com/api/reseller
 @contentType = application/json
 @token = your_api_key_here
 
@@ -22,7 +22,7 @@ x-api-key: {{token}}
 ########################################
 
 ###
-POST {{baseUrl}}/v2/domain/check HTTP/1.1
+POST {{baseUrl}}/v2.25/domain/check HTTP/1.1
 Content-Type: {{contentType}}
 x-api-key: {{token}}
 
@@ -67,13 +67,6 @@ x-api-key: {{token}}
 GET {{baseUrl}}/v2.25/domain/jobs/216 HTTP/1.1
 x-api-key: {{token}}
 
-########################################
-### JOB V2 LEGACY ALIAS (COMPATIBILITY)
-########################################
-
-###
-GET {{baseUrl}}/v2/domain/register/jobs/216 HTTP/1.1
-x-api-key: {{token}}
 
 ########################################
 ### STATUS V2.25 (SINGLE)
