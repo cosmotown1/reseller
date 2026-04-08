@@ -3,79 +3,38 @@
 @contentType = application/json
 
 ########################################
-### HEALTH
+### V2 COMPATIBILITY ONLY
 ########################################
+
+# For current integration and complete samples, use:
+# api/v2.25/domain/registration.http
+
+###
+GET {{baseUrl}}/health
 
 ###
 GET {{baseUrl}}/ping
 x-api-key: {{token}}
 
 ###
-GET {{baseUrl}}/health
-
-
-########################################
-### REGISTER (ASYNC - SINGLE)
-########################################
-
-###
 POST {{baseUrl}}/v2/domain/register
 Content-Type: {{contentType}}
 x-api-key: {{token}}
 
 {
-  "domain": "example12393.com",
+  "domain": "example1123.com",
   "years": 1
 }
 
 ###
-# Set jobId from response manually
-@jobId = 26
-
-###
-GET {{baseUrl}}/v2/domain/jobs/{{jobId}}
+GET {{baseUrl}}/v2/domain/register/jobs/216
 x-api-key: {{token}}
 
-########################################
-### REGISTER (ASYNC - BULK)
-########################################
-
 ###
-POST {{baseUrl}}/v2/domain/register
+POST {{baseUrl}}/v2/domain/check
 Content-Type: {{contentType}}
 x-api-key: {{token}}
 
 {
-  "domains": [
-    {
-      "domain": "example12387.com",
-      "years": 1
-    },
-    {
-      "domain": "example12388.com",
-      "years": 1,
-      "ns": [
-        "ns1.cosmotown.com",
-        "ns2.cosmotown.com"
-      ]
-    }
-  ]
-}
-
-########################################
-### REGISTER (LEGACY - OPTIONAL)
-########################################
-
-###
-POST {{baseUrl}}/v2/domain/register
-Content-Type: {{contentType}}
-x-api-key: {{token}}
-
-{
-  "items": [
-    {
-      "name": "example12387.com",
-      "years": 1
-    }
-  ]
+  "domain": "example1123.com"
 }

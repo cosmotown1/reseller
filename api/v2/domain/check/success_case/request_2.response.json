@@ -1,0 +1,42 @@
+{
+  "request": {
+    "payload": {
+      "domain": "example.com"
+    }
+  },
+  "response": {
+    "success": true,
+    "status": 200,
+    "headers": {
+      "date": "Wed, 08 Apr 2026 08:24:20 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "141",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "597",
+      "x-ratelimit-reset": "60"
+    },
+    "body": {
+      "success": true,
+      "data": {
+        "data": [
+          {
+            "name": "example.com",
+            "available": false
+          }
+        ],
+        "result": {
+          "code": 1000,
+          "message": "Command completed successfully"
+        }
+      }
+    },
+    "duration_ms": 1246
+  },
+  "meta": {
+    "api": "check",
+    "case": "success_case",
+    "timestamp": "2026-04-08T08:24:20.332Z"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://cosmotown.com/api/reseller",
+  "headers": {
+    "x-api-key": "YOUR_API_KEY_HERE",
+    "Content-Type": "application/json"
+  },
+  "timeout": 10000,
+  "concurrency": 3
+}

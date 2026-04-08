@@ -1,0 +1,69 @@
+@baseUrl = https://cosmotown.com/api/reseller
+@token = your_api_key_here
+@contentType = application/json
+
+########################################
+### REGISTER (ASYNC - SINGLE)
+########################################
+
+###
+POST {{baseUrl}}/v2/domain/register
+Content-Type: {{contentType}}
+x-api-key: {{token}}
+
+{
+  "domain": "example123.com",
+  "years": 1
+}
+
+# HTTP/1.1 200 OK
+# x-ratelimit-limit: 600
+# x-ratelimit-remaining: 590
+# x-ratelimit-reset: 28
+# content-type: application/json; charset=utf-8
+# content-length: 82
+# Date: Fri, 03 Apr 2026 15:35:45 GMT
+# Connection: close
+
+# {
+#   "success": true,
+#   "data": {
+#     "validationResult": {},
+#     "status": "processing",
+#     "jobId": "2"
+#   }
+# }
+
+########################################
+### GET JOB (ASYNC - SINGLE)
+########################################
+
+GET {{baseUrl}}/v2/domain/register/jobs/2 HTTP/1.1
+x-api-key: {{token}}
+
+# HTTP/1.1 200 OK
+# x-ratelimit-limit: 600
+# x-ratelimit-remaining: 598
+# x-ratelimit-reset: 60
+# content-type: application/json; charset=utf-8
+# content-length: 247
+# Date: Fri, 03 Apr 2026 15:38:03 GMT
+# Connection: close
+
+# {
+#   "jobId": "2",
+#   "state": "completed",
+#   "result": [
+#     {
+#       "success": false,
+#       "result": {
+#         "code": 2302,
+#         "message": "Domain already exists",
+#         "description": "Command failed; object exists"
+#       }
+#     }
+#   ],
+#   "createdAt": 1775230545955,
+#   "processedAt": 1775230545957,
+#   "finishedAt": 1775230549214
+# }
