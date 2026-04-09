@@ -1,0 +1,45 @@
+{
+  "request": {
+    "payload": {
+      "domain": "example12348test12.com",
+      "years": 1,
+      "sync": true
+    }
+  },
+  "initialResponse": {
+    "success": true,
+    "status": 200,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:46 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "148",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "574",
+      "x-ratelimit-reset": "58"
+    },
+    "body": {
+      "success": true,
+      "result": [
+        {
+          "success": false,
+          "result": {
+            "code": 2302,
+            "message": "Domain already exists",
+            "description": "Command failed; object exists"
+          }
+        }
+      ]
+    },
+    "duration_ms": 718
+  },
+  "finalResponse": null,
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2.25\\domain\\register",
+    "case": "success_case",
+    "flow": "sync",
+    "attempts": 0,
+    "timestamp": "2026-04-09T18:06:49.282Z"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "request": {
+    "payload": {
+      "items": [
+        {
+          "domain": "_example13303.com",
+          "years": 1
+        },
+        {
+          "domain": "_example13302.com",
+          "years": 1,
+          "ns": [
+            "ndns1.cosmotown.com",
+            "ndns2.cosmotown.com"
+          ]
+        }
+      ],
+      "sync": true
+    }
+  },
+  "initialResponse": {
+    "success": false,
+    "status": 400,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:46 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "221",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "566",
+      "x-ratelimit-reset": "57"
+    },
+    "body": {
+      "error": "No valid domains found",
+      "validationResult": {
+        "messages": [],
+        "ignoredDomains": [
+          {
+            "domain": "_example13303.com",
+            "years": 1
+          },
+          {
+            "domain": "_example13302.com",
+            "years": 1,
+            "ns": [
+              "ndns1.cosmotown.com",
+              "ndns2.cosmotown.com"
+            ]
+          }
+        ]
+      }
+    },
+    "duration_ms": 296
+  },
+  "finalResponse": null,
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2.25\\domain\\register_bulk",
+    "case": "validation_error_case",
+    "flow": "sync",
+    "attempts": 0,
+    "timestamp": "2026-04-09T18:06:49.847Z"
+  }
+}

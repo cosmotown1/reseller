@@ -1,0 +1,98 @@
+{
+  "request": {
+    "payload": {
+      "domain": "example12348test97.com",
+      "years": 1
+    }
+  },
+  "initialResponse": {
+    "success": true,
+    "status": 200,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:43 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "83",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "593",
+      "x-ratelimit-reset": "60"
+    },
+    "body": {
+      "success": true,
+      "data": {
+        "validationResult": {},
+        "status": "processing",
+        "jobId": "252"
+      }
+    },
+    "duration_ms": 313
+  },
+  "finalResponse": {
+    "success": true,
+    "attempts": 1,
+    "duration_ms": 297,
+    "data": {
+      "jobId": "252",
+      "state": "completed",
+      "result": [
+        {
+          "success": true,
+          "customer_id": "2956",
+          "data": {
+            "id": "332",
+            "customer_id": "2956",
+            "reseller_customer_id": "1",
+            "domain": "example12348test97.com",
+            "action": "createDomain",
+            "status": "completed",
+            "processed": true,
+            "price": "7.10",
+            "years": 1,
+            "total": "7.10",
+            "domain_created": "2026-04-09T18:06:43.000Z",
+            "domain_expires": "2027-04-09T18:06:43.000Z",
+            "created": "2026-04-09T18:06:43.616Z",
+            "updated": "2026-04-09T18:06:43.616Z",
+            "payment_status": "completed",
+            "ns": null,
+            "customer_product_id": "17453",
+            "order_id": "78611",
+            "invoice_id": "15059"
+          },
+          "result": {
+            "code": 1000,
+            "message": "Command completed successfully",
+            "description": "Command completed successfully"
+          },
+          "postProcessData": {
+            "reseller_order_id": "332",
+            "customer_id": "2956",
+            "reseller_id": 1,
+            "domain": "example12348test97.com",
+            "years": 1,
+            "total_price": "7.10",
+            "price": "7.10",
+            "payment_status": "completed",
+            "domain_created": "2026-04-09T18:06:43Z",
+            "domain_expires": "2027-04-09T18:06:43Z",
+            "ns": [],
+            "contacts": {},
+            "item_num": 1,
+            "options": null
+          }
+        }
+      ],
+      "createdAt": 1775758003610,
+      "processedAt": 1775758003612,
+      "finishedAt": 1775758003704
+    }
+  },
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2\\domain\\register",
+    "case": "success_case",
+    "flow": "async",
+    "attempts": 1,
+    "timestamp": "2026-04-09T18:06:47.161Z"
+  }
+}

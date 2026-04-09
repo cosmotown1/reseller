@@ -1,0 +1,50 @@
+{
+  "request": {
+    "payload": {
+      "domains": "example123.com",
+      "years": 1,
+      "sync": true
+    }
+  },
+  "initialResponse": {
+    "success": false,
+    "status": 400,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:45 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "212",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "576",
+      "x-ratelimit-reset": "58"
+    },
+    "body": {
+      "error": "Invalid payload",
+      "details": [
+        {
+          "message": "\"domains\" is not allowed",
+          "path": [
+            "domains"
+          ],
+          "type": "object.unknown",
+          "context": {
+            "child": "domains",
+            "label": "domains",
+            "value": "example123.com",
+            "key": "domains"
+          }
+        }
+      ]
+    },
+    "duration_ms": 290
+  },
+  "finalResponse": null,
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2.25\\domain\\register",
+    "case": "error_case",
+    "flow": "sync",
+    "attempts": 0,
+    "timestamp": "2026-04-09T18:06:48.640Z"
+  }
+}

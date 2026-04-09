@@ -1,0 +1,10 @@
+{
+  "name": "register",
+  "method": "POST",
+  "url": "/v2/domain/register",
+  "async": {
+    "jobStatusUrl": "/v2/domain/register/jobs/{{jobId}}",
+    "pollInterval": 2000,
+    "maxAttempts": 10
+  }
+}
