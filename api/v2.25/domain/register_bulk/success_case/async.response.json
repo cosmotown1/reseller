@@ -1,0 +1,48 @@
+{
+  "request": {
+    "payload": {
+      "items": [
+        {
+          "domain": "example133036621.com",
+          "years": 1
+        },
+        {
+          "domain": "example133026622.com",
+          "years": 1,
+          "ns": [
+            "ndns1.cosmotown.com",
+            "ndns2.cosmotown.com"
+          ]
+        }
+      ]
+    }
+  },
+  "initialResponse": {
+    "success": true,
+    "status": 200,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:46 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "52",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "569",
+      "x-ratelimit-reset": "57"
+    },
+    "body": {
+      "success": true,
+      "status": "processing",
+      "jobId": "264"
+    },
+    "duration_ms": 299
+  },
+  "finalResponse": null,
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2.25\\domain\\register_bulk",
+    "case": "success_case",
+    "flow": "async",
+    "attempts": 0,
+    "timestamp": "2026-04-09T18:06:49.547Z"
+  }
+}

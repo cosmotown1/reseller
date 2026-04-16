@@ -8,14 +8,14 @@
     "success": true,
     "status": 200,
     "headers": {
-      "date": "Thu, 09 Apr 2026 18:06:43 GMT",
+      "date": "Thu, 09 Apr 2026 18:06:45 GMT",
       "content-type": "application/json; charset=utf-8",
       "content-length": "145",
       "connection": "keep-alive",
       "server": "Secure",
       "x-ratelimit-limit": "600",
-      "x-ratelimit-remaining": "599",
-      "x-ratelimit-reset": "60"
+      "x-ratelimit-remaining": "580",
+      "x-ratelimit-reset": "59"
     },
     "body": {
       "success": true,
@@ -32,14 +32,14 @@
         }
       }
     },
-    "duration_ms": 1282
+    "duration_ms": 465
   },
   "finalResponse": null,
   "meta": {
-    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2\\domain\\check",
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2.25\\domain\\check",
     "case": "success_case",
     "flow": "async",
     "attempts": 0,
-    "timestamp": "2026-04-09T18:06:46.262Z"
+    "timestamp": "2026-04-09T18:06:48.267Z"
   }
 }

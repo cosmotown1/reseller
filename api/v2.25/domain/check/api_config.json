@@ -1,0 +1,5 @@
+{
+  "name": "check",
+  "method": "POST",
+  "url": "/v2.25/domain/check"
+}

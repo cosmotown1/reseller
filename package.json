@@ -4,7 +4,7 @@
   "description": "API documentation and other resources for resellers",
   "main": "index.js",
   "scripts": {
-  "test:api": "node api/v2/runner.js"
+  "test:api": "node api/runner.js"
 },
   "repository": {
     "type": "git",
