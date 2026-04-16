@@ -1,7 +1,8 @@
 {
   "request": {
     "payload": {
-      "domain": "_123example.com"
+      "domain": "_example12348test.com",
+      "years": 1
     }
   },
   "initialResponse": {
@@ -10,26 +11,33 @@
     "headers": {
       "date": "Thu, 09 Apr 2026 18:06:43 GMT",
       "content-type": "application/json; charset=utf-8",
-      "content-length": "60",
+      "content-length": "133",
       "connection": "keep-alive",
       "server": "Secure",
       "x-ratelimit-limit": "600",
-      "x-ratelimit-remaining": "596",
+      "x-ratelimit-remaining": "591",
       "x-ratelimit-reset": "60"
     },
     "body": {
-      "success": false,
-      "data": [],
-      "error": "No valid domains found"
+      "error": "No valid domains found",
+      "validationResult": {
+        "messages": [],
+        "ignoredDomains": [
+          {
+            "domain": "_example12348test.com",
+            "years": 1
+          }
+        ]
+      }
     },
-    "duration_ms": 295
+    "duration_ms": 308
   },
   "finalResponse": null,
   "meta": {
-    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2\\domain\\check",
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2\\domain\\register",
     "case": "validation_error_case",
     "flow": "async",
     "attempts": 0,
-    "timestamp": "2026-04-09T18:06:46.548Z"
+    "timestamp": "2026-04-09T18:06:46.883Z"
   }
 }

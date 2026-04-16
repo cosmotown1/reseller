@@ -1,0 +1,119 @@
+{
+  "request": {
+    "payload": {
+      "items": [
+        {
+          "domain": "example133036623test93.com",
+          "years": 1
+        },
+        {
+          "domain": "example133026624test94.com",
+          "years": 1,
+          "ns": [
+            "ndns1.cosmotown.com",
+            "ndns2.cosmotown.com"
+          ]
+        }
+      ],
+      "sync": true
+    }
+  },
+  "initialResponse": {
+    "success": true,
+    "status": 200,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:44 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "transfer-encoding": "chunked",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "585",
+      "x-ratelimit-reset": "59"
+    },
+    "body": {
+      "success": true,
+      "data": {
+        "result": [
+          {
+            "success": true,
+            "result": {
+              "code": 1000,
+              "message": "Command completed successfully",
+              "description": "Command completed successfully"
+            },
+            "data": {
+              "reseller_order_id": "336",
+              "customer_id": "2956",
+              "reseller_customer_id": "1",
+              "domain": "example133036623test93.com",
+              "action": "createDomain",
+              "status": "completed",
+              "processed": false,
+              "price": "7.10",
+              "total_price": "7.10",
+              "years": 1,
+              "domain_created": "2026-04-09T18:06:44Z",
+              "domain_expires": "2027-04-09T18:06:44Z",
+              "created": "2026-04-09T18:06:44.370Z",
+              "updated": "2026-04-09T18:06:44.370Z",
+              "payment_status": "completed",
+              "ns": [],
+              "customer_product_id": null,
+              "order_id": null,
+              "invoice_id": null,
+              "contacts": {},
+              "item_num": 1,
+              "options": null
+            }
+          },
+          {
+            "success": true,
+            "result": {
+              "code": 1000,
+              "message": "Command completed successfully",
+              "description": "Command completed successfully"
+            },
+            "data": {
+              "reseller_order_id": "337",
+              "customer_id": "2956",
+              "reseller_customer_id": "1",
+              "domain": "example133026624test94.com",
+              "action": "createDomain",
+              "status": "completed",
+              "processed": false,
+              "price": "7.10",
+              "total_price": "7.10",
+              "years": 1,
+              "domain_created": "2026-04-09T18:06:44Z",
+              "domain_expires": "2027-04-09T18:06:44Z",
+              "created": "2026-04-09T18:06:44.436Z",
+              "updated": "2026-04-09T18:06:44.436Z",
+              "payment_status": "completed",
+              "ns": [
+                "ndns1.cosmotown.com",
+                "ndns2.cosmotown.com"
+              ],
+              "customer_product_id": null,
+              "order_id": null,
+              "invoice_id": null,
+              "contacts": {},
+              "item_num": 2,
+              "options": null
+            }
+          }
+        ],
+        "validationResult": {}
+      }
+    },
+    "duration_ms": 444
+  },
+  "finalResponse": null,
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2\\domain\\register_bulk",
+    "case": "success_case",
+    "flow": "sync",
+    "attempts": 0,
+    "timestamp": "2026-04-09T18:06:47.749Z"
+  }
+}

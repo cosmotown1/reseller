@@ -1,0 +1,134 @@
+{
+  "request": {
+    "payload": {
+      "items": [
+        {
+          "domains": "example13301.com",
+          "year": 1
+        },
+        {
+          "domains": "example13302.com",
+          "year": 1,
+          "ns": [
+            "ndns1.cosmotown.com",
+            "ndns2.cosmotown.com"
+          ]
+        }
+      ]
+    }
+  },
+  "initialResponse": {
+    "success": false,
+    "status": 400,
+    "headers": {
+      "date": "Thu, 09 Apr 2026 18:06:44 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "content-length": "1085",
+      "connection": "keep-alive",
+      "server": "Secure",
+      "x-ratelimit-limit": "600",
+      "x-ratelimit-remaining": "588",
+      "x-ratelimit-reset": "59"
+    },
+    "body": {
+      "error": "Invalid payload",
+      "details": [
+        {
+          "message": "\"items[0].domain\" is required",
+          "path": [
+            "items",
+            0,
+            "domain"
+          ],
+          "type": "any.required",
+          "context": {
+            "label": "items[0].domain",
+            "key": "domain"
+          }
+        },
+        {
+          "message": "\"items[0].domains\" is not allowed",
+          "path": [
+            "items",
+            0,
+            "domains"
+          ],
+          "type": "object.unknown",
+          "context": {
+            "child": "domains",
+            "label": "items[0].domains",
+            "value": "example13301.com",
+            "key": "domains"
+          }
+        },
+        {
+          "message": "\"items[0].year\" is not allowed",
+          "path": [
+            "items",
+            0,
+            "year"
+          ],
+          "type": "object.unknown",
+          "context": {
+            "child": "year",
+            "label": "items[0].year",
+            "value": 1,
+            "key": "year"
+          }
+        },
+        {
+          "message": "\"items[1].domain\" is required",
+          "path": [
+            "items",
+            1,
+            "domain"
+          ],
+          "type": "any.required",
+          "context": {
+            "label": "items[1].domain",
+            "key": "domain"
+          }
+        },
+        {
+          "message": "\"items[1].domains\" is not allowed",
+          "path": [
+            "items",
+            1,
+            "domains"
+          ],
+          "type": "object.unknown",
+          "context": {
+            "child": "domains",
+            "label": "items[1].domains",
+            "value": "example13302.com",
+            "key": "domains"
+          }
+        },
+        {
+          "message": "\"items[1].year\" is not allowed",
+          "path": [
+            "items",
+            1,
+            "year"
+          ],
+          "type": "object.unknown",
+          "context": {
+            "child": "year",
+            "label": "items[1].year",
+            "value": 1,
+            "key": "year"
+          }
+        }
+      ]
+    },
+    "duration_ms": 292
+  },
+  "finalResponse": null,
+  "meta": {
+    "fullPath": "D:\\Work\\Cosmotown\\reseller\\api\\v2\\domain\\register_bulk",
+    "case": "error_case",
+    "flow": "async",
+    "attempts": 0,
+    "timestamp": "2026-04-09T18:06:47.302Z"
+  }
+}

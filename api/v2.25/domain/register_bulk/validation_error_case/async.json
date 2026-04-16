@@ -1,0 +1,19 @@
+{
+  "payload": {
+   "items": [
+    {
+      "domain": "-example 13303.com",
+      "years": 1
+    },
+    {
+      "domain": "-example 13302.com",
+      "years": 1,
+
+      "ns": [
+        "ndns1.cosmotown.com",
+        "ndns2.cosmotown.com"
+        ]
+    }
+  ]
+  }
+}
