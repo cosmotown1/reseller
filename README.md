@@ -28,14 +28,12 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Ping](#ping)
   - [Domain Check](#domain-check)
   - [Domain Register](#domain-register)
-    - [Async Request (Recommended)](#domain-register-async)
-    - [Async Request with Name Servers](#domain-register-async-ns)
-    - [Sync Request](#domain-register-sync)
-    - [Domain Registration with Contact Information](#domain-register-contact-info)
+    - [Async Request (Recommended)](#async-request)
+    - [Async Request with Name Servers](#async-request-with-name-servers)
+    - [Sync Request](#sync-request)
+    - [Domain Registration with Contact Information](#domain-registration-with-contact-information)
   - [Job Status](#job-status)
-  - [Domain Status (v2.25)](#domain-status-v2-25)
-    - [Single Domain](#domain-status-single)
-    - [Bulk Domain Status](#domain-status-bulk)
+  - [Domain Status](#domain-status)
   - [Domain Info](#domain-info)
   - [Domain Lock](#domain-lock)
   - [Domain Unlock](#domain-unlock)
@@ -182,7 +180,7 @@ x-api-key: YOUR_API_KEY
 ---
 ## Domain Register
 
-### Async Request (Recommended)
+### Async Request
 
 ```http
 POST /v2.25/domain/register
@@ -217,7 +215,8 @@ Common request fields (single-item or per-item in `items`):
 }
 ```
 
-### Async Request with Name Servers (Recommended for New Integrations)
+### Async Request with Name Servers
+Recommended for New Integrations.
 
 ```http
 POST /v2.25/domain/register
@@ -338,7 +337,7 @@ x-api-key: YOUR_API_KEY
 
 ---
 
-## Domain Registration with Contact Information
+### Domain Registration with Contact Information
 
 #### Request
 
@@ -1130,9 +1129,11 @@ The asynchronous endpoints immediately return a `jobId` while processing continu
 
 Typical lifecycle:
 
-submitted → processing → completed
-or
-submitted → processing → failed
+> submitted → processing → completed
+
+OR
+
+> submitted → processing → failed
 
 When polling jobs, use exponential backoff and cap total polling time to a sensible limit appropriate for your integration.
 
@@ -1155,11 +1156,12 @@ Treat HTTP status codes first, then inspect the response envelope for details:
 The API frequently uses numeric `code` values inside `result` objects. Below are common codes observed in examples; this list should be extended as the service publishes a full mapping.
 
 Examples: 
-  Code   Description
-  ------ ----------------------------------
-  1000   Command completed successfully
-  1001   Command accepted; action pending
-  2302   Object already exists
+ 
+ | Code |  Description |
+ | --- | --- |
+ | 1000 |  Command completed successfully |
+ | 1001  |  Command accepted; action pending |
+ | 2302  |  Object already exists |
 
 If the server uses a different error envelope, the authoritative format will be published here.
 
