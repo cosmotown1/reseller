@@ -183,7 +183,7 @@ Follow the polling strategies in [ASYNC_WORKFLOW.md](./api/ASYNC_WORKFLOW.md#pol
 |-------|----------|
 | Job returns 404 | Job has expired. Use `/domain/status` instead. |
 | Status shows `processed: false` after 5 minutes | Normal. Keep polling. Registration is still processing. |
-| Payment failed | Check response `payment_status: "failed"`. Resubmit with valid payment info. |
+| Payment failed | Check response `payment_status: "failed"`. |
 | Batch request returns 400 | Domains array may be too large (max 100). Split into smaller batches. |
 | Rate limit exceeded | Reduce polling frequency. Max 600 requests/10 min per customer. |
 
