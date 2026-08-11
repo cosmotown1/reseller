@@ -39,7 +39,13 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Domain Unlock](#domain-unlock)
   - [Change Domain Name Servers](#change-domain-name-servers)
   - [Domain Contact Update](#domain-contact-update)
+  - [Get Default Contact Information](#get-default-contact-information)
+  - [Update Default Contact Information](#update-default-contact-information)
   - [Fetch Domain Contacts](#fetch-domain-contacts)
+  - [Get My Domains](#get-my-domains)
+  - [Get Domain DNS Settings](#get-domain-dns-settings)
+  - [Save Domain DNS Settings](#save-domain-dns-settings)
+  - [Change Domain Options](#change-domain-options)
   - [Domain Renewal](#domain-renewal)
   - [Domain Transfer](#domain-transfer)
 - [Quick start](#quick-start)
@@ -85,11 +91,17 @@ https://cosmotown.com/api/reseller/
 - `POST /v2.25/domain/lock`
 - `POST /v2.25/domain/unlock`
 - `POST /v2.25/domain/change-nameserver`
+- `GET /v2.25/domain/list`
+- `POST /v2.25/domain/options`
+- `GET /v2.25/domain/dns-settings`
+- `POST /v2.25/domain/dns-settings`
 
 #### Domain Contacts
 
 - `POST /v2.25/domain/contacts/save`
 - `GET /v2.25/domain/contacts/{domain}`
+- `GET /v2.25/domain/contacts/default`
+- `POST /v2.25/domain/contacts/default`
 
 #### Domain Renewal
 
@@ -918,6 +930,297 @@ x-api-key: YOUR_API_KEY
 
 ---
 
+## Get Default Contact Information
+
+Retrieves the authenticated customer's default domain contact information.
+
+#### Request
+
+```http
+GET /v2.25/domain/contacts/default
+x-api-key: YOUR_API_KEY
+```
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "registrant": {
+      "FirstName": "Jane",
+      "LastName": "Doe",
+      "Email": "jane@example.com",
+      "Address1": "123 Main St",
+      "Address2": "Suite 100",
+      "City": "Anytown",
+      "State": "CA",
+      "Zip": "12345",
+      "Country": "US",
+      "Phone": "+1.1234567890",
+      "Extension": "",
+      "Fax": "",
+      "Company": "Acme Corp"
+    },
+    "administrative": {},
+    "technical": {},
+    "billing": {}
+  }
+}
+```
+
+---
+
+## Update Default Contact Information
+
+Saves or updates the authenticated customer's default domain contact information.
+
+#### Request
+
+```http
+POST /v2.25/domain/contacts/default
+Content-Type: application/json
+x-api-key: YOUR_API_KEY
+
+{
+  "contact_info": {
+    "registrant": {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane@example.com",
+      "phone": "+1.1234567890",
+      "address1": "123 Main St",
+      "city": "Anytown",
+      "state": "CA",
+      "zip": "12345",
+      "country": "US"
+    }
+  }
+}
+```
+
+#### Parameters
+- **contact_info**: object — *required*. One or more defaults for `registrant`, `administrative`, `technical`, or `billing`.
+- Allowed contact fields: `firstName` / `FirstName`, `lastName` / `LastName`, `company` / `Company`, `email` / `Email`, `phone` / `Phone`, `extension` / `Extension`, `fax` / `Fax`, `address1` / `Address1`, `address2` / `Address2`, `city` / `City`, `state` / `State`, `zip` / `Zip`, `country` / `Country`.
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "registrant": {
+      "FirstName": "Jane",
+      "LastName": "Doe",
+      "Email": "jane@example.com",
+      "Address1": "123 Main St",
+      "Address2": "",
+      "City": "Anytown",
+      "State": "CA",
+      "Zip": "12345",
+      "Country": "US",
+      "Phone": "+1.1234567890",
+      "Company": "Acme Corp"
+    }
+  }
+}
+```
+
+---
+
+## Get My Domains
+
+Returns the authenticated customer's managed domain list.
+
+#### Request
+
+```http
+GET /v2.25/domain/list?limit=20&offset=0&sort=expiration_date&order=desc
+x-api-key: YOUR_API_KEY
+```
+
+#### Query parameters
+- **domain**: string — *optional*. Return only the specified domain.
+- **limit**: integer — *optional*. Maximum number of records, default `20`, maximum `100`.
+- **offset**: integer — *optional*. Result offset, default `0`.
+- **sort**: string — *optional*. One of `domain`, `auto_billing`, `whois_privacy`, `locked`, `created`, `expiration_date`. Default `expiration_date`.
+- **order**: string — *optional*. `asc` or `desc`. Default `desc`.
+
+#### Example response
+
+```json
+{
+  "domains": [
+    {
+      "domain": "example12470.com",
+      "auto_billing": false,
+      "whois_privacy": false,
+      "locked": false,
+      "created": "2026-06-24T04:40:58.977Z",
+      "expiration_date": "2027-06-24T04:40:59.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## Get Domain DNS Settings
+
+Retrieves the configured DNS settings for a managed domain.
+
+#### Request
+
+```http
+GET /v2.25/domain/dns-settings?domain=example12470.com
+x-api-key: YOUR_API_KEY
+```
+
+#### Query parameters
+- **domain**: string — *required*. Domain to retrieve DNS settings for.
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "domain": "example12470.com",
+    "nameservers": [
+      "ndns1.cosmotown.com",
+      "ndns2.cosmotown.com"
+    ],
+    "records": [
+      {
+        "type": "A",
+        "name": "@",
+        "value": "1.2.3.4",
+        "ttl": 3600
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Save Domain DNS Settings
+
+Updates the DNS settings for a managed domain.
+
+#### Request
+
+```http
+POST /v2.25/domain/dns-settings
+Content-Type: application/json
+x-api-key: YOUR_API_KEY
+
+{
+  "domain": "example12470.com",
+  "records": {
+    "@": [
+      { "type": "A", "value": "1.2.3.4", "ttl": 3600 }
+    ]
+  },
+  "mode": "merge"
+}
+```
+
+#### Parameters
+- **domain**: string — *required*. Domain to update.
+- **records**: object — *optional*. Record data to save for the domain.
+- **mode**: string — *optional*. `merge` (default) or `delete`.
+- **all**: boolean — *optional*. When `true` with `mode: delete`, the endpoint deletes all records for the domain.
+
+#### Behavior
+- If `records` is provided, the endpoint saves the DNS records.
+- If `records` is provided and `mode` is `delete`, the endpoint deletes those DNS records provided for the domain.
+- If `mode` is `delete` and `all` is `true`, the endpoint deletes all DNS records for the domain.
+- If no `records` are provided and delete-all is not requested, the endpoint performs a DNS settings refresh/update.
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "domain": "example12470.com",
+    "updated": true
+  }
+}
+```
+
+---
+
+## Change Domain Options
+
+Updates domain-level options such as privacy, lock status, and auto billing. Supports single-domain payloads or bulk updates via `items`.
+
+#### Request (single domain)
+
+```http
+POST /v2.25/domain/options
+Content-Type: application/json
+x-api-key: YOUR_API_KEY
+
+{
+  "domain": "example12470.com",
+  "options": {
+    "enable_private_whois": true,
+    "lock_domain": true,
+    "enable_auto_billing": false
+  }
+}
+```
+
+#### Request (bulk)
+
+```http
+POST /v2.25/domain/options
+Content-Type: application/json
+x-api-key: YOUR_API_KEY
+
+{
+  "items": [
+    {
+      "domain": "example12470.com",
+      "options": {
+        "enable_private_whois": true,
+        "lock_domain": false,
+        "enable_auto_billing": true
+      }
+    }
+  ]
+}
+```
+
+#### Parameters
+- **domain**: string — *required* for single-domain payloads.
+- **items**: array[object] — *optional*. Batch updates.
+- **options**: object — *required*. Supported fields:
+  - `enable_private_whois`: boolean
+  - `lock_domain`: boolean
+  - `enable_auto_billing`: boolean
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "results": [
+    {
+      "success": true,
+      "domain": "example12470.com",
+      "whois_privacy": false,
+      "locked": true,
+      "auto_billing": false
+    }
+  ]
+}
+```
+
+---
+
 ## Fetch Domain Contacts
 
 Retrieves the contact information currently associated with a managed domain.
@@ -1194,13 +1497,7 @@ Some registries require additional fields depending on the TLD.
 
 ### Phase 2
 
-- Get default contact information
-
-- Update default contact information
-
-- Get My Domains
-
-- Change Domain Options
+- Get Transfer-Out status
 
 - Get TLD prices
 
@@ -1218,6 +1515,7 @@ Some registries require additional fields depending on the TLD.
 
 This file records notable public API changes. For each release include the version, date, and migration notes.
 
+- [**v2.25** phase-2 APIs](#versioning)
 - **v2.25** (latest) 
 - **v2** 
 
