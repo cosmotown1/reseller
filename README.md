@@ -1513,11 +1513,7 @@ Some registries require additional fields depending on the TLD.
 
 ## Changelog
 
-This file records notable public API changes. For each release include the version, date, and migration notes.
-
-- [**v2.25** phase-2 APIs](#versioning)
-- **v2.25** (latest) 
-- **v2** 
+For complete release history and migration notes, see [CHANGELOG.md](./changelog.md).
 
 ## FAQ & Troubleshooting
 
