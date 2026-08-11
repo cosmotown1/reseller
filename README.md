@@ -22,6 +22,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 
 ## Table of Contents
 
+- [Supported TLDs](#supported-tlds)
 - [API Overview](#api-overview)
 - [APIs](#apis)
   - [Health](#health)
@@ -61,6 +62,17 @@ curl -H "x-api-key: YOUR_API_KEY" \
 - [Developer Roadmap](#developer-roadmap)
 - [Changelog](#changelog)
 - [FAQ & Troubleshooting](#faq-troubleshooting)
+
+---
+
+## Supported TLDs
+
+The current implementation of v2.25 supports the following top-level domains:
+
+- `.com`
+- `.net`
+
+Additional TLDs are planned for future releases. 
 
 ---
 
