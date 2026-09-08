@@ -36,6 +36,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Job Status](#job-status)
   - [Domain Status](#domain-status)
   - [Domain Info](#domain-info)
+  - [Get Domain Auth Code](#get-domain-auth-code)
   - [Domain Lock](#domain-lock)
   - [Domain Unlock](#domain-unlock)
   - [Change Domain Name Servers](#change-domain-name-servers)
@@ -44,11 +45,13 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Update Default Contact Information](#update-default-contact-information)
   - [Fetch Domain Contacts](#fetch-domain-contacts)
   - [Get My Domains](#get-my-domains)
+  - [Get Account Balance](#get-account-balance)
   - [Get Domain DNS Settings](#get-domain-dns-settings)
   - [Save Domain DNS Settings](#save-domain-dns-settings)
   - [Change Domain Options](#change-domain-options)
   - [Domain Renewal](#domain-renewal)
   - [Domain Transfer](#domain-transfer)
+  - [Domain Transfer-Out](#domain-transfer-out)
 - [Quick start](#quick-start)
   - [Typical Integration Workflow](#typical-integration-workflow)
   - [API Design Principles](#api-design-principles)
@@ -100,6 +103,7 @@ https://cosmotown.com/api/reseller/
 #### Domain Management
 
 - `POST /v2.25/domain/info`
+- `GET /v2.25/domain/authcode?domain={domain}`
 - `POST /v2.25/domain/lock`
 - `POST /v2.25/domain/unlock`
 - `POST /v2.25/domain/change-nameserver`
@@ -107,6 +111,10 @@ https://cosmotown.com/api/reseller/
 - `POST /v2.25/domain/options`
 - `GET /v2.25/domain/dns-settings`
 - `POST /v2.25/domain/dns-settings`
+
+#### Account / Customer
+
+- `GET /v2.25/account/balance`
 
 #### Domain Contacts
 
@@ -122,6 +130,10 @@ https://cosmotown.com/api/reseller/
 #### Domain Transfer-In
 
 - `POST /v2.25/domain/transfer`
+
+#### Domain Transfer-Out
+
+- `GET /v2.25/domain/transfer-out`
 
 # APIs
 
@@ -752,6 +764,54 @@ x-api-key: YOUR_API_KEY
 
 ---
 
+## Get Domain Auth Code
+
+Returns the authorization code stored for a domain owned by the authenticated customer. The API verifies domain ownership before returning the code.
+
+#### Request
+
+```http
+GET /v2.25/domain/authcode?domain=example12470.com
+x-api-key: YOUR_API_KEY
+```
+
+#### Query parameters
+
+- **domain**: string — *required*. The fully qualified domain name whose authorization code should be retrieved.
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "domain": "example12470.com",
+    "authCode": "AUTH-123"
+  }
+}
+```
+
+#### Behavior and errors
+
+- The domain is normalized to lowercase before validation and lookup.
+- The authenticated customer must own the domain through the reseller account.
+- Missing or invalid domains return HTTP `400`.
+- Missing authentication returns HTTP `401`.
+- A domain owned by another customer returns HTTP `403`.
+- A domain without a stored authorization code returns HTTP `404`.
+
+#### Example error response
+
+```json
+{
+  "success": false,
+  "error": "Unauthorized: customer does not own this domain",
+  "code": "UNAUTHORIZED_ACCESS"
+}
+```
+
+---
+
 ## Domain Lock
 
 Locks a domain at the registry to prevent unauthorized updates, transfers, or deletion.
@@ -1074,6 +1134,44 @@ x-api-key: YOUR_API_KEY
   ]
 }
 ```
+
+---
+
+## Get Account Balance
+
+Returns the account balance for the authenticated customer. The customer is resolved from the API key.
+
+#### Request
+
+```http
+GET /v2.25/account/balance
+x-api-key: YOUR_API_KEY
+```
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "balance": 78877.43
+  }
+}
+```
+
+`balance` is returned as a number. If the customer does not have a fund record, the API returns `0`.
+
+#### Authentication error
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": "Authentication required"
+}
+```
+
+This response uses HTTP `401`. Backend failures use HTTP `500` with the same error response shape.
 
 ---
 
@@ -1401,6 +1499,79 @@ Refer to `GET /v2.25/domain/status/{domain}` to fetch final domain details.
 
 ---
 
+## Domain Transfer-Out
+
+Returns transfer-out requests for domains belonging to the authenticated customer. By default, only records without a customer reply are returned.
+
+#### Request
+
+```http
+GET /v2.25/domain/transfer-out
+x-api-key: YOUR_API_KEY
+```
+
+#### Query parameters
+
+- **domain_name**: string — *optional*. Return only the specified domain's transfer-out records.
+- **reply**: string — *optional*. Filter by `accept` or `reject`. Use `all` to include records with no reply. When omitted, only records with no reply are returned.
+- **limit**: integer — *optional*. Maximum number of records to return.
+- **offset**: integer — *optional*. Result offset, default `0`.
+- **sort**: string — *optional*. One of `domain_name`, `created`, `updated`, or `status`.
+- **order**: string — *optional*. `asc` or `desc`. Default `desc`.
+
+#### Example request
+
+```http
+GET /v2.25/domain/transfer-out?reply=all&offset=0&limit=20&sort=created&order=desc
+x-api-key: YOUR_API_KEY
+```
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 123,
+      "domain_name": "sample1.com",
+      "status": "auto_approved",
+      "reply": null,
+      "auto_complete_at": "2024-12-28T05:33:14Z",
+      "created": "2024-12-23T05:35:08.115Z",
+      "updated": null
+    },
+    {
+      "id": 124,
+      "domain_name": "sample2.com",
+      "status": "auto_approved",
+      "reply": null,
+      "auto_complete_at": "2024-09-06T18:09:23Z",
+      "created": "2024-09-01T18:10:13.296Z",
+      "updated": null
+    }
+  ]
+}
+```
+
+A `reply` value of `null` means that the customer has not replied to the confirmation request.
+
+#### Validation errors
+
+An invalid `reply` or `domain_name` value returns HTTP `400` with the standard error envelope:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": "Invalid domain name"
+}
+```
+
+Missing authentication returns HTTP `401` with the same envelope shape.
+
+---
+
 ## Quick start
 
 ### Typical Integration Workflow
@@ -1508,8 +1679,6 @@ Some registries require additional fields depending on the TLD.
 ## Developer Roadmap
 
 ### Phase 2
-
-- Get Transfer-Out status
 
 - Get TLD prices
 
