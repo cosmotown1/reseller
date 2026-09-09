@@ -46,6 +46,8 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Fetch Domain Contacts](#fetch-domain-contacts)
   - [Get My Domains](#get-my-domains)
   - [Get Account Balance](#get-account-balance)
+  - [Get TLD Prices](#get-tld-prices)
+  - [Get TLD Product Information](#get-tld-product-information)
   - [Get Domain DNS Settings](#get-domain-dns-settings)
   - [Save Domain DNS Settings](#save-domain-dns-settings)
   - [Change Domain Options](#change-domain-options)
@@ -115,6 +117,8 @@ https://cosmotown.com/api/reseller/
 #### Account / Customer
 
 - `GET /v2.25/account/balance`
+- `GET /v2.25/tld/price`
+- `GET /v2.25/tld/products`
 
 #### Domain Contacts
 
@@ -763,6 +767,91 @@ x-api-key: YOUR_API_KEY
 ```
 
 ---
+
+## Get TLD Prices
+
+Returns active live-phase TLD prices for the authenticated customer. An active customer-specific price overrides the system price; otherwise the system price is returned.
+
+#### Request
+
+```http
+GET /v2.25/tld/price?tlds=com,net&product_type=registration&years=1,2&sortBy=price&sortOrder=asc
+x-api-key: YOUR_API_KEY
+```
+
+#### Query parameters
+
+- **tld** or **tlds**: string — *optional*. One TLD or a comma-separated list. A leading dot is optional.
+- **product_type** or **productTypes**: string — *optional*. One product type or a comma-separated list, such as `registration`, `renewal`, or `transfer`.
+- **year** or **years**: integer — *optional*. One year value or a comma-separated list of positive integers.
+- **sortBy**: string — *optional*. `tld`, `price`, or `year`. Default: `tld`.
+- **sortOrder**: string — *optional*. `asc` or `desc`. Default: `asc`.
+
+Filters accept comma-separated values or a single value. Use lowercase product types in requests. A leading dot is accepted for compatibility but is not required in TLD values. Prices are resolved per authenticated customer: an active customer-specific price is preferred when it exists, and the active system price is used as fallback. Results contain one row per TLD, product type, and registration year. System-priced rows contain `years` and `price`. Customer-overridden rows additionally contain `customPrice: true` and `originalPrice`, which is the system price before the override.
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "com": {
+      "registration": {
+        "1": {
+          "years": 1,
+          "price": 7.5,
+          "customPrice": true,
+          "originalPrice": 9.5
+        }
+      }
+    }
+  }
+}
+```
+
+#### Validation errors
+
+Invalid filter values or unsupported sorting fields return HTTP `400`. Missing authentication returns HTTP `401`.
+
+## Get TLD Product Information
+
+Returns the catalog values used to construct targeted price requests. It provides active TLD names, product names, and the maximum years accepted for each supported product type.
+
+#### Request
+
+```http
+GET /v2.25/tld/products
+x-api-key: YOUR_API_KEY
+```
+
+This endpoint does not require query parameters. It returns the complete small catalog in one response.
+
+#### Example response
+
+```json
+{
+  "success": true,
+  "data": {
+    "tlds": ["com", "net"],
+    "product_types": ["registration", "renewal", "transfer"],
+    "max_years_by_product_type": {
+      "registration": 10,
+      "renewal": 10,
+      "transfer": 1
+    }
+  }
+}
+```
+
+The response is a catalog for constructing a targeted request to `GET /v2.25/tld/price`. `tlds` is the list of allowed TLD values, and `product_types` is the list of allowed product filters. Use `max_years_by_product_type` to validate the `years` value before requesting prices.
+
+Common year guidance:
+
+- `registration`: maximum `10` years.
+- `renewal`: maximum `10` years.
+- `transfer`: maximum `1` year because a transfer generally extends the registration by one year.
+
+The maximum is a product-level validation limit; a specific TLD or registry may support fewer years. Missing authentication returns HTTP `401`.
 
 ## Get Domain Auth Code
 
