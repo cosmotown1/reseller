@@ -92,7 +92,7 @@ https://cosmotown.com/api/reseller/
 - `GET /health` (no auth)
 - `GET /ping`
 
-#### Domain Registration
+#### Registration
 
 - `POST /v2.25/domain/check`
 - `POST /v2.25/domain/register`
@@ -117,22 +117,22 @@ https://cosmotown.com/api/reseller/
 - `GET /v2.25/tld/price`
 - `GET /v2.25/tld/products`
 
-#### Domain Contacts
+#### Contacts
 
 - `POST /v2.25/domain/contacts/save`
 - `GET /v2.25/domain/contacts/{domain}`
 - `GET /v2.25/domain/contacts/default`
 - `POST /v2.25/domain/contacts/default`
 
-#### Domain Renewal
+#### Renewal
 
 - `POST /v2.25/domain/renew`
 
-#### Domain Transfer-In
+#### Transfer-In
 
 - `POST /v2.25/domain/transfer`
 
-#### Domain Transfer-Out
+#### Transfer-Out
 
 - `GET /v2.25/domain/transfer-out`
 
