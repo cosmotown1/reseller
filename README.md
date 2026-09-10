@@ -72,12 +72,9 @@ curl -H "x-api-key: YOUR_API_KEY" \
 
 ## Supported TLDs
 
-The current implementation of v2.25 supports the following top-level domains:
-
-- `.com`
-- `.net`
-
-Additional TLDs are planned for future releases. 
+The active TLD catalog can change as registry configuration changes. Use
+`GET /v2.25/tld/products` to retrieve the current supported TLD list before
+building a price request.
 
 ---
 
@@ -775,21 +772,19 @@ Returns active live-phase TLD prices for the authenticated customer. An active c
 #### Request
 
 ```http
-GET /v2.25/tld/price?tlds=com,net&product_type=registration&years=1,2&sortBy=price&sortOrder=asc
+GET /v2.25/tld/price?tlds=com,net&product_type=registration&years=1,2
 x-api-key: YOUR_API_KEY
 ```
 
 #### Query parameters
 
 - **tld** or **tlds**: string — *optional*. One TLD or a comma-separated list. A leading dot is optional.
-- **product_type** or **productTypes**: string — *optional*. One product type or a comma-separated list, such as `registration`, `renewal`, or `transfer`.
+- **product_type**: string — *optional*. One product type or a comma-separated list, such as `registration`, `renewal`, or `transfer`.
 - **year** or **years**: integer — *optional*. One year value or a comma-separated list of positive integers.
-- **sortBy**: string — *optional*. `tld`, `price`, or `year`. Default: `tld`.
-- **sortOrder**: string — *optional*. `asc` or `desc`. Default: `asc`.
 
-Filters accept comma-separated values or a single value. Use lowercase product types in requests. A leading dot is accepted for compatibility but is not required in TLD values. Prices are resolved per authenticated customer: an active customer-specific price is preferred when it exists, and the active system price is used as fallback. Results contain one row per TLD, product type, and registration year. System-priced rows contain `years` and `price`. Customer-overridden rows additionally contain `customPrice: true` and `originalPrice`, which is the system price before the override.
+Filters accept comma-separated values or a single value. Use lowercase product types in requests. A leading dot is accepted for compatibility but is not required in TLD values. Prices are resolved per authenticated customer: an active customer-specific price is preferred when it exists, and the active system price is used as fallback. Results contain one row per TLD, product type, and registration year. The registration year is the key under each product type. System-priced rows contain `price`. Customer-overridden rows additionally contain `customPrice: true` and `originalPrice`, which is the system price before the override.
 
-#### Example response
+#### Example response (system price)
 
 ```json
 {
@@ -798,7 +793,23 @@ Filters accept comma-separated values or a single value. Use lowercase product t
     "com": {
       "registration": {
         "1": {
-          "years": 1,
+          "price": 7.5
+        }
+      }
+    }
+  }
+}
+```
+
+#### Example response (customer override)
+
+```json
+{
+  "success": true,
+  "data": {
+    "com": {
+      "registration": {
+        "1": {
           "price": 7.5,
           "customPrice": true,
           "originalPrice": 9.5
@@ -811,11 +822,11 @@ Filters accept comma-separated values or a single value. Use lowercase product t
 
 #### Validation errors
 
-Invalid filter values or unsupported sorting fields return HTTP `400`. Missing authentication returns HTTP `401`.
+Invalid filter values return HTTP `400`. Missing authentication returns HTTP `401`.
 
 ## Get TLD Product Information
 
-Returns the catalog values used to construct targeted price requests. It provides active TLD names, product names, and the maximum years accepted for each supported product type.
+Returns the catalog values used to construct targeted price requests. It provides active TLD names, product types, and the maximum years accepted for each supported product type.
 
 #### Request
 
@@ -824,7 +835,7 @@ GET /v2.25/tld/products
 x-api-key: YOUR_API_KEY
 ```
 
-This endpoint does not require query parameters. It returns the complete small catalog in one response.
+This endpoint does not require query parameters. For v2.25, the public catalog is currently static and limited to TLDs `com` and `net` and product types `registration`, `renewal`, and `transfer`. The catalog will expand after additional v2 registry integrations are completed.
 
 #### Example response
 
@@ -1669,7 +1680,7 @@ A minimal, recommended integration flow for reseller systems:
 
 1. Obtain an API key from Cosmotown support and store it securely.
 2. Use the Domain Check API to verify availability: `POST /v2.25/domain/check`.
-3. Submit registration (, transfer, or renew) requests with `POST /v2.25/domain/register` (prefer async).
+3. Submit registration, transfer, or renewal requests with the appropriate endpoint (prefer async).
 4. Poll the Job Status API `GET /v2.25/domain/jobs/{jobId}` to retrieve results.
 5. After processing, fetch domain/order details with `GET /v2.25/domain/status/{domain}`.
 6. Manage contacts and nameservers as needed via contacts and change-nameserver endpoints.
