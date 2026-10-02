@@ -64,7 +64,6 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Common result codes](#common-result-codes)
   - [Validation](#validation)
 - [Notes](#notes)
-- [Developer Roadmap](#developer-roadmap)
 - [Changelog](#changelog)
 - [FAQ & Troubleshooting](#faq-troubleshooting)
 
@@ -550,7 +549,7 @@ x-api-key: YOUR_API_KEY
 
 ## Domain Status
 
-> **Recommendation:** For asynchronous registration requests, first query the **Job Status API** (`GET /v2.25/domain/jobs/{jobId}`) to retrieve the operation result. Use the Domain Status API to fetch the latest order and domain information after processing has completed.
+> **Recommendation:** For asynchronous registration requests, query the **Job Status API** (`GET /v2.25/domain/jobs/{jobId}`) for queue progress. Use the Domain Status API to fetch the latest stored order state; batch lookup is also available.
 
 #### Request
 
@@ -562,7 +561,6 @@ x-api-key: YOUR_API_KEY
 #### Parameters 
 
 - **domain**: string — *required* (path). The domain to query.
-
 
 #### Example response
 
@@ -1692,7 +1690,7 @@ This README contains full examples and per-endpoint parameter details below.
 - RESTful resource-oriented endpoints.
 - JSON request and response bodies (`Content-Type: application/json`).
 - API Key authentication using the `x-api-key` header.
-- Batch limits: bulk endpoints (register, transfer, renew) support up to **50 items per request** and an HTTP body limit of **1 MB**.
+- Batch registration, renewal, transfer, and domain-status requests accept up to **50 items/domains per request**. The HTTP body limit is **1 MB**.
 
 ### Naming and formatting conventions
 
@@ -1700,14 +1698,19 @@ This README contains full examples and per-endpoint parameter details below.
 - Dates: ISO 8601 in UTC (e.g., `2026-06-24T04:40:59Z`).
 - Monetary values are decimal string (e.g., `"9.50"`).
 
-### Rate limiting and throttling 
+### Rate limiting and throttling
 
-The service implements two rate-limit layers :
+Limits apply concurrently. For a standard authenticated API key, the released service defaults are:
 
-- Layer 1 (IP baseline): `300` requests per minute per IP (global onRequest rate limiter).
-- Layer 2 (post-auth customer-based): variable per-minute quotas — `1200` for priority API keys, `600` for authenticated customers, `120` fallback. 
+| Scope | Limit | Applies to |
+| --- | ---: | --- |
+| Client IP | 300 requests per minute | All requests from that IP |
+| Customer | 600 requests per minute | All requests for that customer |
+| Customer and endpoint | 60 requests per minute | General endpoints such as domain info, auth codes, lock/unlock, domain list and options, DNS settings/sync, account balance, and TLD prices/products |
 
-Clients should implement retries with exponential backoff and jitter to handle `429` responses. 
+Domain check, registration, renewal, transfer, nameserver changes, contact operations, job status, and domain status use the customer-wide limit rather than the 60-per-endpoint limit. The effective limits for a request are returned in the `x-ratelimit-limit`, `x-ratelimit-remaining`, and `x-ratelimit-reset` response headers.
+
+When a request receives `429 Too Many Requests`, pause and retry with exponential backoff and jitter. Avoid immediate retry loops.
 
 ### Asynchronous Processing
 
@@ -1775,22 +1778,6 @@ Some registries require additional fields depending on the TLD.
   - `administrative`
   - `technical`
   - `billing`
-
-## Developer Roadmap
-
-### Phase 2
-
-- Get TLD prices
-
-- Get domain AuthCode
-
-### Phase 3
-
-- Get DNSSEC domain status
-
-- Enable domain DNSSEC
-
-- Disable domain DNSSEC
 
 ## Changelog
 
