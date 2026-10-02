@@ -64,7 +64,7 @@ x-api-key: YOUR_API_KEY
 ```json
 {
   "status": "ok",
-  "ip": "172.19.0.1",
+  "ip": "128.1.0.1",
   "server_time": "2026-04-07T16:57:16.989Z"
 }
 ```
