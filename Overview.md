@@ -1,11 +1,11 @@
 # reseller
-API documentaion and other resources for resellers 
+API documentation and other resources for resellers
 
 ## Documentation
 
 ### Getting Started
 - **[Workflow Guide](./WORKFLOW_GUIDE.md)** — Integration quickstart, common scenarios, and troubleshooting
-- **[Async Architecture](./api/ASYNC_WORKFLOW.md)** — Job lifecycle, polling strategies, and code examples in JavaScript, Python, cURL
+- **[Async Registration Overview](./api/ASYNC_WORKFLOW.md)** — Brief overview of registration tracking options
 
 ### API Reference
 - **Current API (v2.25):** [Registration Reference](./api/v2.25/domain/registration.md)
@@ -18,6 +18,4 @@ API documentaion and other resources for resellers
 ## Key Concepts
 
 - **Async-First:** Registration requests are queued and processed asynchronously
-- **Job Lifecycle:** Jobs persist ~1-2 hours; use `/domain/status` API for indefinite tracking
-- **Polling:** Check `/domain/status` every 30-60 seconds (recommended)
-- **Status API:** Works forever — use this for persistent domain tracking
+- **Tracking:** Use the returned job ID to check request progress and domain status to look up the stored order.
