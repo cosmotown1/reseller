@@ -427,7 +427,7 @@ x-api-key: YOUR_API_KEY
       "state": "CA",
       "zip": "90210",
       "country": "US",
-      "email": "bob.johnson@techsupport.com",
+      "email": "bob.johnson@example.com",
       "address1": "456 Tech Blvd"
     },
     "billing": {
@@ -439,7 +439,7 @@ x-api-key: YOUR_API_KEY
       "state": "IL",
       "zip": "60601",
       "country": "US",
-      "email": "alice.brown@billing.com",
+      "email": "alice.brown@example.com",
       "address1": "789 Finance Ave"
     }
   },
@@ -1788,7 +1788,7 @@ Some registries require additional fields depending on the TLD.
 
 ## Support
 
-For API questions, contact [developer@cosmotown.com](mailto:developer@cosmotown.com) with the endpoint, domain, and response details. Never include your API key.
+For API questions, contact Cosmotown support with the endpoint, domain, and response details. Never include your API key.
 
 ## Changelog
 

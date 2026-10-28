@@ -6,3 +6,4 @@ logs/
 .env.pro
 .env.local
 
+AGENTS.md

@@ -10,10 +10,9 @@ info:
     Task guides live in `docs/guides/` and error codes in `docs/errors.md`.
   contact:
     name: Cosmotown Developer Support
-    email: developer@cosmotown.com
   license:
-    name: ISC
-    identifier: ISC
+    name: Apache-2.0
+    identifier: Apache-2.0
 
 servers:
   - url: https://cosmotown.com/api/reseller
@@ -224,9 +223,9 @@ paths:
         Returns the current state and, once finished, the per-item result. Poll with
         exponential backoff until `state` is `completed` or `failed`.
 
-        If the queue entry has been removed, the server falls back to the stored order
-        for the job. A `404` means neither the job nor a matching order was found.
-        Check `getDomainStatus` for the domain instead.
+        If the job record is no longer available, the response can still reflect the
+        domain order. A `404` means no matching job or order was found. Check
+        `getDomainStatus` for the domain instead.
       parameters:
         - name: jobId
           in: path
@@ -1958,7 +1957,7 @@ components:
         state:
           type: string
           description: |
-            Current job state, as reported by the queue. Terminal states are `completed`
+            Current job state. Terminal states are `completed`
             and `failed`. Any other value means the job is still in progress; do not
             depend on a specific in-progress value.
           examples: [completed]
