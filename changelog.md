@@ -4,6 +4,13 @@ All notable changes to the Cosmotown Reseller API are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Corrected public documentation for rate limits, bulk request limits, queue-job retention, and domain-status responses to match the released service.
+- Removed roadmap entries for capabilities already documented as available.
+- Consolidated documentation into `README.md`; removed legacy v2 documentation, internal workflow notes, and the sample test runner.
+
 ## [v2.25 phase-2](https://github.com/cosmotown1/reseller/releases/tag/v2.25_2) - 2026-08-11
 
 ### Added
