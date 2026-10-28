@@ -1,0 +1,1986 @@
+openapi: 3.1.0
+info:
+  title: Cosmotown Reseller API
+  version: 2.25.0
+  summary: Domain check, registration, and tracking for resellers.
+  description: |
+    Public reference for the Cosmotown Reseller API, version 2.25.
+
+    Authenticate every request except `GET /health` with the `x-api-key` header.
+    Task guides live in `docs/guides/` and error codes in `docs/errors.md`.
+  contact:
+    name: Cosmotown Developer Support
+    email: developer@cosmotown.com
+  license:
+    name: ISC
+    identifier: ISC
+
+servers:
+  - url: https://cosmotown.com/api/reseller
+    description: Production
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: General
+    description: Service health and key verification.
+  - name: Registration
+    description: Check availability, register domains, and track results.
+  - name: Domains
+    description: Read, lock, update, and list managed domains.
+  - name: Contacts
+    description: Domain and default contact records.
+  - name: DNS
+    description: DNS settings and records for managed domains.
+  - name: Transfers
+    description: Transfer domains in and track transfer-out requests.
+  - name: Renewal
+    description: Renew registrations.
+  - name: Pricing
+    description: TLD prices and the product catalog.
+  - name: Account
+    description: Account balance.
+
+paths:
+  /health:
+    get:
+      tags: [General]
+      operationId: getHealth
+      summary: Check service health
+      security: []
+      responses:
+        '200':
+          description: The service is running.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: ok
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ping:
+    get:
+      tags: [General]
+      operationId: ping
+      summary: Verify API key and connectivity
+      responses:
+        '200':
+          description: The API key is valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ping'
+              example:
+                status: ok
+                ip: your.server.ip.address
+                server_time: '2026-04-07T16:57:16.989Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /v2.25/domain/check:
+    post:
+      tags: [Registration]
+      operationId: checkDomain
+      summary: Check domain availability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DomainCheckRequest'
+            example:
+              domain: example1123.com
+      responses:
+        '200':
+          description: Availability result for the domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainCheckResponse'
+              example:
+                success: true
+                data:
+                  data:
+                    - name: example1123.com
+                      available: false
+                  result:
+                    code: 1000
+                    message: Command completed successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/register:
+    post:
+      tags: [Registration]
+      operationId: registerDomain
+      summary: Register one or more domains
+      description: |
+        Submit a registration. By default the request is asynchronous and returns a
+        `jobId`; track it with `getDomainJob`. Set `sync: true` to receive per-item
+        results in the response.
+
+        Send either a single item (`domain` and `years` at the top level) or a batch
+        (`items`). A batch accepts up to 50 items per request. The request body is
+        limited to 1 MB.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              asyncSingle:
+                summary: Asynchronous single domain
+                value:
+                  domain: example-doc-20260407-01.com
+                  years: 1
+              asyncBatchWithNameServers:
+                summary: Asynchronous batch with name servers (recommended)
+                value:
+                  items:
+                    - domain: example12470.com
+                      years: 1
+                      ns:
+                        - ndns1.cosmotown.com
+                        - ndns2.cosmotown.com
+              syncSingle:
+                summary: Synchronous single domain
+                value:
+                  domain: example12471.com
+                  years: 1
+                  sync: true
+      responses:
+        '200':
+          description: |
+            Asynchronous requests return a `jobId`. Synchronous requests return
+            per-item `result` entries.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/RegisterAccepted'
+                  - $ref: '#/components/schemas/RegisterSyncResponse'
+              examples:
+                accepted:
+                  summary: Asynchronous acceptance
+                  value:
+                    success: true
+                    status: processing
+                    jobId: '51040'
+                syncFailed:
+                  summary: Synchronous failure (object exists)
+                  value:
+                    success: true
+                    result:
+                      - success: false
+                        result:
+                          code: 2302
+                          message: Domain already exists
+                          description: 'Command failed; object exists'
+        '207':
+          description: |
+            Synchronous batch where some items succeeded and some failed. Inspect each
+            entry in `result`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSyncResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          description: |
+            Synchronous request where every item failed with `INSUFFICIENT_FUNDS`.
+            Top up the account and retry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSyncResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/jobs/{jobId}:
+    get:
+      tags: [Registration]
+      operationId: getDomainJob
+      summary: Get the status and result of an asynchronous job
+      description: |
+        Returns the current state and, once finished, the per-item result. Poll with
+        exponential backoff until `state` is `completed` or `failed`.
+
+        If the queue entry has been removed, the server falls back to the stored order
+        for the job. A `404` means neither the job nor a matching order was found.
+        Check `getDomainStatus` for the domain instead.
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Identifier returned by an asynchronous `registerDomain` request.
+          schema:
+            type: string
+          example: '51040'
+      responses:
+        '200':
+          description: The job state and result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+              example:
+                jobId: '51040'
+                state: completed
+                result:
+                  - success: true
+                    result:
+                      code: 1000
+                      message: Command completed successfully
+                      description: Command completed successfully
+                    data:
+                      reseller_order_id: '471'
+                      domain: example12470.com
+                      action: createDomain
+                      status: completed
+                      processed: true
+                      years: 1
+                      price: '9.50'
+                      total_price: '9.50'
+                createdAt: 1782276058972
+                processedAt: 1782276058973
+                finishedAt: 1782276059059
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The job belongs to a different customer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleError'
+        '404':
+          description: Neither the job nor a matching order was found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobNotFound'
+              example:
+                error: Job not found
+                code: 404
+                status: not_found
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/status/{domain}:
+    get:
+      tags: [Registration]
+      operationId: getDomainStatus
+      summary: Get the stored order for a domain
+      description: |
+        Returns the latest stored reseller order for the domain. Use this to confirm
+        the outcome after processing, especially when a job result is not available.
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: The domain to look up.
+          schema:
+            type: string
+            format: hostname
+          example: example12470.com
+      responses:
+        '200':
+          description: The stored order for the domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainStatusResponse'
+              example:
+                success: true
+                data:
+                  reseller_order_id: '471'
+                  domain: example12470.com
+                  action: createDomain
+                  status: completed
+                  processed: true
+                  years: 1
+                  price: '9.50'
+                  total_price: '9.50'
+                  domain_created: '2026-06-24T04:40:59.000Z'
+                  domain_expires: '2027-06-24T04:40:59.000Z'
+                  payment_status: completed
+                  ns:
+                    - ndns1.cosmotown.com
+                    - ndns2.cosmotown.com
+                  whois_privacy: false
+                  locked: false
+                  auto_billing: false
+                  domain_registry_roid: 143845493_DOMAIN_COM-VRSN
+                  created: '2026-06-24T04:40:58.977Z'
+                  updated: '2026-06-24T04:40:59.100Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No stored order exists for this domain and customer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleError'
+              example:
+                error: No registration record found for this domain
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/info:
+    post:
+      tags: [Domains]
+      operationId: getDomainInfo
+      summary: Get domain info
+      description: Retrieves the latest registry information for a domain, including status, name servers, contacts, important dates, and classification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain]
+              properties:
+                domain:
+                  type: string
+                  examples: [example12470.com]
+      responses:
+        '200':
+          description: Registry information for the domain.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  result:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+                  classification:
+                    type: string
+                    examples: [managed_here]
+              example:
+                success: true
+                data:
+                  name: example12470.com
+                  roid: 143845493_DOMAIN_COM-VRSN
+                  status:
+                    - value: ok
+                      lang: en
+                  contacts: {}
+                  nameServers: [NDNS1.COSMOTOWN.COM, NDNS2.COSMOTOWN.COM]
+                  createdAt: '2026-06-24T04:40:59Z'
+                  expiresAt: '2027-06-24T04:40:59Z'
+                  updatedAt: '2026-06-24T04:40:59Z'
+                  authInfoRequired: false
+                result:
+                  code: 1000
+                  message: Command completed successfully
+                classification: managed_here
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/tld/price:
+    get:
+      tags: [Pricing]
+      operationId: getTldPrices
+      summary: Get TLD prices
+      description: |
+        Returns active live-phase TLD prices for the authenticated customer. A
+        customer-specific price overrides the system price. Rows with
+        `customPrice: true` include `originalPrice`, the system price before the override.
+      parameters:
+        - name: tlds
+          in: query
+          required: false
+          description: One TLD or a comma-separated list, for example `com,net`. A leading dot is optional. `tld` is accepted as an alias.
+          schema:
+            type: string
+        - name: product_type
+          in: query
+          required: false
+          description: One product type or a comma-separated list, such as `registration`, `renewal`, or `transfer`. Use lowercase values.
+          schema:
+            type: string
+        - name: years
+          in: query
+          required: false
+          description: One positive integer or a comma-separated list. `year` is accepted as an alias.
+          schema:
+            type: string
+            examples: ['1,2']
+      responses:
+        '200':
+          description: Prices keyed by TLD, product type, and registration year.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: object
+              example:
+                success: true
+                data:
+                  com:
+                    registration:
+                      '1':
+                        price: 7.5
+                        customPrice: true
+                        originalPrice: 9.5
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/tld/products:
+    get:
+      tags: [Pricing]
+      operationId: getTldProducts
+      summary: Get TLD product information
+      description: |
+        Returns the catalog used to build targeted price requests. In v2.25 the
+        catalog is limited to `com` and `net`. Product types are `registration`,
+        `renewal`, and `transfer`.
+      responses:
+        '200':
+          description: The TLD and product catalog.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tlds:
+                        type: array
+                        items:
+                          type: string
+                      product_types:
+                        type: array
+                        items:
+                          type: string
+                      max_years_by_product_type:
+                        type: object
+                        additionalProperties:
+                          type: integer
+              example:
+                success: true
+                data:
+                  tlds: [com, net]
+                  product_types: [registration, renewal, transfer]
+                  max_years_by_product_type:
+                    registration: 10
+                    renewal: 10
+                    transfer: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/authcode:
+    get:
+      tags: [Transfers]
+      operationId: getDomainAuthCode
+      summary: Get domain auth code
+      description: |
+        Returns the authorization code stored for a domain owned by the
+        authenticated customer. Ownership is verified before the code is returned.
+      parameters:
+        - name: domain
+          in: query
+          required: true
+          description: The fully qualified domain name. It is lowercased before lookup.
+          schema:
+            type: string
+            examples: [example12470.com]
+      responses:
+        '200':
+          description: The stored authorization code.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      authCode:
+                        type: string
+              example:
+                success: true
+                data:
+                  domain: example12470.com
+                  authCode: AUTH-123
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The domain belongs to another customer.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    const: false
+                  error:
+                    type: string
+                  code:
+                    type: string
+              example:
+                success: false
+                error: 'Unauthorized: customer does not own this domain'
+                code: UNAUTHORIZED_ACCESS
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/lock:
+    post:
+      tags: [Domains]
+      operationId: lockDomain
+      summary: Lock a domain
+      description: Locks a domain at the registry to prevent unauthorized updates, transfers, or deletion.
+      requestBody:
+        $ref: '#/components/requestBodies/DomainRequest'
+      responses:
+        '200':
+          description: The domain is locked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainLockResponse'
+              example:
+                success: true
+                data:
+                  domain: example12470.com
+                  customer_product_id: '17564'
+                  action: lock
+                  locked: true
+                result:
+                  code: 1000
+                  message: Command completed successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/unlock:
+    post:
+      tags: [Domains]
+      operationId: unlockDomain
+      summary: Unlock a domain
+      description: Unlocks a previously locked domain, allowing updates and transfers.
+      requestBody:
+        $ref: '#/components/requestBodies/DomainRequest'
+      responses:
+        '200':
+          description: The domain is unlocked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainLockResponse'
+              example:
+                success: true
+                data:
+                  domain: example12470.com
+                  customer_product_id: '17564'
+                  action: unlock
+                  locked: false
+                result:
+                  code: 1000
+                  message: Command completed successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/change-nameserver:
+    post:
+      tags: [Domains]
+      operationId: changeDomainNameservers
+      summary: Change domain name servers
+      description: Updates the authoritative name servers for a managed domain.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain, ns]
+              properties:
+                domain:
+                  type: string
+                ns:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+            example:
+              domain: example12470.com
+              ns: [ndns1.cosmotown.com]
+      responses:
+        '200':
+          description: The name servers were updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      nameservers:
+                        type: array
+                        items:
+                          type: string
+                      previous_nameservers:
+                        type: array
+                        items:
+                          type: string
+              example:
+                success: true
+                data:
+                  domain: example12470.com
+                  nameservers: [ndns1.cosmotown.com]
+                  previous_nameservers: [NDNS1.COSMOTOWN.COM, NDNS2.COSMOTOWN.COM]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/contacts/save:
+    post:
+      tags: [Contacts]
+      operationId: saveDomainContacts
+      summary: Update domain contacts
+      description: |
+        Updates one or more contact roles on a domain. Supported roles are
+        `registrant`, `administrative`, `technical`, and `billing`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain, contact_info]
+              properties:
+                domain:
+                  type: string
+                contact_info:
+                  $ref: '#/components/schemas/ContactInfo'
+      responses:
+        '200':
+          description: The contacts were saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      savedContacts:
+                        type: object
+                        additionalProperties:
+                          type: string
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            contact_type_id:
+                              type: integer
+                            contact_info_id:
+                              type: string
+                            status:
+                              type: string
+              example:
+                success: true
+                data:
+                  domain: example123557.com
+                  savedContacts:
+                    registrant: '138443'
+                  results:
+                    - type: registrant
+                      contact_type_id: 2
+                      contact_info_id: '138443'
+                      status: saved
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/contacts/{domain}:
+    get:
+      tags: [Contacts]
+      operationId: getDomainContacts
+      summary: Fetch domain contacts
+      description: Retrieves the contact information currently associated with a managed domain.
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: The domain to fetch contacts for.
+          schema:
+            type: string
+            examples: [example123557.com]
+      responses:
+        '200':
+          description: Contacts for each role on the domain.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      contacts:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          properties:
+                            contact_info_id:
+                              type: string
+                            contact_type_id:
+                              type: string
+                            type:
+                              type: string
+                            firstName:
+                              type: string
+                            lastName:
+                              type: string
+                            email:
+                              type: string
+                              format: email
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/contacts/default:
+    get:
+      tags: [Contacts]
+      operationId: getDefaultContacts
+      summary: Get default contact information
+      description: Retrieves the authenticated customer's default domain contact information.
+      responses:
+        '200':
+          description: Default contacts for each role.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      additionalProperties: true
+              example:
+                success: true
+                data:
+                  registrant:
+                    FirstName: Jane
+                    LastName: Doe
+                    Email: jane@example.com
+                    Address1: 123 Main St
+                    City: Anytown
+                    State: CA
+                    Zip: '12345'
+                    Country: US
+                    Phone: '+1.1234567890'
+                    Company: Acme Corp
+                  administrative: {}
+                  technical: {}
+                  billing: {}
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Contacts]
+      operationId: updateDefaultContacts
+      summary: Update default contact information
+      description: Saves or updates the authenticated customer's default domain contact information.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contact_info]
+              properties:
+                contact_info:
+                  $ref: '#/components/schemas/ContactInfo'
+      responses:
+        '200':
+          description: The default contacts were saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    additionalProperties: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/list:
+    get:
+      tags: [Domains]
+      operationId: listDomains
+      summary: List my domains
+      description: |
+        Returns the authenticated customer's managed domains. The response has
+        no total count, so page with `limit` and `offset`. There is no substring
+        search. Use `domain` for an exact lookup of one domain name.
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          description: Return only the specified domain. Exact match only.
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of records. Default `20`, maximum `100`.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          description: Result offset. Default `0`.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: sort
+          in: query
+          required: false
+          description: One of `domain`, `auto_billing`, `whois_privacy`, `locked`, `created`, `expiration_date`.
+          schema:
+            type: string
+            enum: [domain, auto_billing, whois_privacy, locked, created, expiration_date]
+            default: expiration_date
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: A page of managed domains.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [domains]
+                properties:
+                  domains:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        domain:
+                          type: string
+                        auto_billing:
+                          type: boolean
+                        whois_privacy:
+                          type: boolean
+                        locked:
+                          type: boolean
+                        created:
+                          type: string
+                          format: date-time
+                        expiration_date:
+                          type: string
+                          format: date-time
+              example:
+                domains:
+                  - domain: example12470.com
+                    auto_billing: false
+                    whois_privacy: false
+                    locked: false
+                    created: '2026-06-24T04:40:58.977Z'
+                    expiration_date: '2027-06-24T04:40:59.000Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/account/balance:
+    get:
+      tags: [Account]
+      operationId: getAccountBalance
+      summary: Get account balance
+      description: Returns the account balance for the customer identified by the API key. If the customer has no fund record, the balance is `0`.
+      responses:
+        '200':
+          description: The current balance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      balance:
+                        type: number
+              example:
+                success: true
+                data:
+                  balance: 78877.43
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/dns-settings:
+    get:
+      tags: [DNS]
+      operationId: getDomainDnsSettings
+      summary: Get domain DNS settings
+      description: Retrieves the configured DNS settings for a managed domain.
+      parameters:
+        - name: domain
+          in: query
+          required: true
+          description: The domain to retrieve DNS settings for.
+          schema:
+            type: string
+            examples: [example12470.com]
+      responses:
+        '200':
+          description: The configured name servers and DNS records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      nameservers:
+                        type: array
+                        items:
+                          type: string
+                      records:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/DnsRecord'
+              example:
+                success: true
+                data:
+                  domain: example12470.com
+                  nameservers: [ndns1.cosmotown.com, ndns2.cosmotown.com]
+                  records:
+                    - type: A
+                      name: '@'
+                      value: 1.2.3.4
+                      ttl: 3600
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [DNS]
+      operationId: saveDomainDnsSettings
+      summary: Save domain DNS settings
+      description: |
+        Saves, deletes, or refreshes DNS settings for a managed domain.
+
+        - With `records` and `mode: merge` (default), the records are saved.
+        - With `records` and `mode: delete`, only the listed records are deleted.
+        - With `mode: delete` and `all: true`, all DNS records are deleted.
+        - With neither `records` nor delete-all, the settings are refreshed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain]
+              properties:
+                domain:
+                  type: string
+                records:
+                  type: object
+                  description: Records keyed by host name, for example `@`.
+                  additionalProperties:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DnsRecord'
+                mode:
+                  type: string
+                  enum: [merge, delete]
+                  default: merge
+                all:
+                  type: boolean
+                  description: "With `mode: delete`, delete all records for the domain."
+            example:
+              domain: example12470.com
+              records:
+                '@':
+                  - type: A
+                    value: 1.2.3.4
+                    ttl: 3600
+              mode: merge
+      responses:
+        '200':
+          description: The DNS settings were updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      domain:
+                        type: string
+                      updated:
+                        type: boolean
+              example:
+                success: true
+                data:
+                  domain: example12470.com
+                  updated: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/options:
+    post:
+      tags: [Domains]
+      operationId: changeDomainOptions
+      summary: Change domain options
+      description: Updates privacy, lock status, and auto billing for one domain, or for many domains with `items`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/DomainOptionsSingle'
+                - $ref: '#/components/schemas/DomainOptionsBulk'
+      responses:
+        '200':
+          description: The result for each domain.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        success:
+                          type: boolean
+                        domain:
+                          type: string
+                        whois_privacy:
+                          type: boolean
+                        locked:
+                          type: boolean
+                        auto_billing:
+                          type: boolean
+              example:
+                success: true
+                results:
+                  - success: true
+                    domain: example12470.com
+                    whois_privacy: false
+                    locked: true
+                    auto_billing: false
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/renew:
+    post:
+      tags: [Renewal]
+      operationId: renewDomain
+      summary: Renew a domain
+      description: "Renews an existing domain registration. Set `sync: true` to attempt synchronous processing."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain, years]
+              properties:
+                domain:
+                  type: string
+                years:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                sync:
+                  type: boolean
+            example:
+              domain: example123570.com
+              years: 1
+              sync: true
+      responses:
+        '200':
+          description: The renewal result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSyncResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/transfer:
+    post:
+      tags: [Transfers]
+      operationId: transferDomains
+      summary: Transfer domains in
+      description: |
+        Starts one or more domain transfers with `items`. Up to 50 items per request.
+        The request body limit is 1 MB. After a sync response, use
+        `GET /v2.25/domain/status/{domain}` to fetch final details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  items:
+                    type: object
+                    required: [domain, authCode]
+                    properties:
+                      domain:
+                        type: string
+                      authCode:
+                        type: string
+                sync:
+                  type: boolean
+            example:
+              items:
+                - domain: example123570.com
+                  authCode: QVVUSC0xMjM=
+              sync: true
+      responses:
+        '200':
+          description: The transfer result for each item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSyncResponse'
+              example:
+                success: true
+                result:
+                  - success: true
+                    result:
+                      code: 1001
+                      message: Command completed successfully; action pending
+                      description: Command completed successfully; action pending
+                      transfer_status: pending
+                    data:
+                      reseller_order_id: '474'
+                      domain: example123570.com
+                      action: transferDomain
+                      status: completed
+                      transfer_status: pending
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /v2.25/domain/transfer-out:
+    get:
+      tags: [Transfers]
+      operationId: listTransferOuts
+      summary: List transfer-out requests
+      description: |
+        Returns transfer-out requests for domains owned by the customer. By
+        default only records with no customer reply are returned.
+      parameters:
+        - name: domain_name
+          in: query
+          required: false
+          description: Return only the specified domain's records.
+          schema:
+            type: string
+        - name: reply
+          in: query
+          required: false
+          description: Use `accept` or `reject` to filter by reply. Use `all` to include records with no reply.
+          schema:
+            type: string
+            enum: [accept, reject, all]
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of records to return.
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [domain_name, created, updated, status]
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Transfer-out records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        domain_name:
+                          type: string
+                        status:
+                          type: string
+                        reply:
+                          type: ['string', 'null']
+                        auto_complete_at:
+                          type: ['string', 'null']
+                          format: date-time
+                        created:
+                          type: string
+                          format: date-time
+                        updated:
+                          type: ['string', 'null']
+                          format: date-time
+              example:
+                success: true
+                data:
+                  - id: 123
+                    domain_name: sample1.com
+                    status: auto_approved
+                    reply: null
+                    auto_complete_at: '2024-12-28T05:33:14Z'
+                    created: '2024-12-23T05:35:08.115Z'
+                    updated: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Your reseller API key. Keep it private and never embed it in client-side code.
+
+  headers:
+    RateLimitLimit:
+      description: Maximum requests allowed in the current window.
+      schema:
+        type: integer
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+
+  requestBodies:
+    DomainRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [domain]
+            properties:
+              domain:
+                type: string
+                examples: [example12470.com]
+
+  responses:
+    BadRequest:
+      description: The request is malformed or contains an invalid value.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          example:
+            success: false
+            data: null
+            error: Invalid domain name
+    Unauthorized:
+      description: The API key is missing or invalid. Do not retry.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          example:
+            success: false
+            data: null
+            error: Authentication required
+    NotFound:
+      description: The resource does not exist or is no longer available.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    RateLimited:
+      description: Too many requests. Retry with exponential backoff and jitter.
+      headers:
+        x-ratelimit-limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        x-ratelimit-remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        x-ratelimit-reset:
+          $ref: '#/components/headers/RateLimitReset'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    ServerError:
+      description: An internal error occurred. Retry with backoff; contact support if it persists.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+
+  schemas:
+    DomainLockResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            domain:
+              type: string
+            customer_product_id:
+              type: string
+            action:
+              type: string
+              enum: [lock, unlock]
+            locked:
+              type: boolean
+        result:
+          type: object
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+
+    DnsRecord:
+      type: object
+      required: [type, value]
+      properties:
+        type:
+          type: string
+          examples: [A]
+        name:
+          type: string
+          description: Host name. `@` is the zone apex.
+        value:
+          type: string
+        ttl:
+          type: integer
+          minimum: 0
+
+    DomainOptionsSingle:
+      type: object
+      required: [domain, options]
+      properties:
+        domain:
+          type: string
+        options:
+          $ref: '#/components/schemas/DomainOptions'
+
+    DomainOptionsBulk:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [domain, options]
+            properties:
+              domain:
+                type: string
+              options:
+                $ref: '#/components/schemas/DomainOptions'
+
+    DomainOptions:
+      type: object
+      properties:
+        enable_private_whois:
+          type: boolean
+        lock_domain:
+          type: boolean
+        enable_auto_billing:
+          type: boolean
+
+    ErrorEnvelope:
+      type: object
+      description: "Error body. Most routes include `success: false`, but some return only `error`."
+      required: [error]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: 'null'
+        error:
+          description: |
+            A message string in most responses. Validation errors may return an
+            object with a `details` field instead.
+          oneOf:
+            - type: string
+            - type: object
+              properties:
+                details:
+                  type: array
+                  items:
+                    type: object
+
+    SimpleError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    JobNotFound:
+      type: object
+      required: [error, code, status]
+      properties:
+        error:
+          type: string
+          examples: [Job not found]
+        code:
+          type: integer
+          examples: [404]
+        status:
+          type: string
+          examples: [not_found]
+
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          examples: [ok]
+
+    Ping:
+      type: object
+      required: [status, ip, server_time]
+      properties:
+        status:
+          type: string
+          examples: [ok]
+        ip:
+          type: string
+          description: The server IP address that received the request.
+        server_time:
+          type: string
+          format: date-time
+
+    DomainCheckRequest:
+      type: object
+      required: [domain]
+      properties:
+        domain:
+          type: string
+          format: hostname
+          description: The fully qualified domain name to check.
+          examples: [example.com]
+
+    DomainCheckResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          required: [data, result]
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                required: [name, available]
+                properties:
+                  name:
+                    type: string
+                  available:
+                    type: boolean
+            result:
+              $ref: '#/components/schemas/RegistryResult'
+
+    RegistryResult:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          description: EPP-style result code. See `docs/errors.md`.
+          examples: [1000]
+        message:
+          type: string
+        description:
+          type: string
+        transfer_status:
+          type: [string, 'null']
+          description: Present on transfer responses only.
+
+    ContactDetails:
+      type: object
+      description: Standard contact fields.
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        company:
+          type: string
+        phone:
+          type: string
+          description: E.164 format, for example `+1.5551234567`.
+        extension:
+          type: string
+        fax:
+          type: string
+        email:
+          type: string
+          format: email
+        address1:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+          description: Two-letter country code, for example `US`.
+
+    ContactInfo:
+      type: object
+      description: Contact roles. Include only the roles you need.
+      properties:
+        registrant:
+          $ref: '#/components/schemas/ContactDetails'
+        administrative:
+          $ref: '#/components/schemas/ContactDetails'
+        technical:
+          $ref: '#/components/schemas/ContactDetails'
+        billing:
+          $ref: '#/components/schemas/ContactDetails'
+
+    RegistrationOptions:
+      type: object
+      properties:
+        enable_private_whois:
+          type: boolean
+        enable_auto_billing:
+          type: boolean
+
+    RegisterItem:
+      type: object
+      required: [domain, years]
+      properties:
+        domain:
+          type: string
+          format: hostname
+        years:
+          type: integer
+          minimum: 1
+          description: Number of years to register. Registry limits may apply.
+        ns:
+          type: array
+          items:
+            type: string
+            format: hostname
+          description: Name servers to set for the domain.
+        contact_info:
+          $ref: '#/components/schemas/ContactInfo'
+        options:
+          $ref: '#/components/schemas/RegistrationOptions'
+
+    RegisterRequest:
+      type: object
+      description: Send either a single item (`domain`, `years`) or a batch (`items`).
+      properties:
+        sync:
+          type: boolean
+          default: false
+          description: When `true`, return per-item results in the response.
+        domain:
+          type: string
+          format: hostname
+        years:
+          type: integer
+          minimum: 1
+        ns:
+          type: array
+          items:
+            type: string
+            format: hostname
+        contact_info:
+          $ref: '#/components/schemas/ContactInfo'
+        options:
+          $ref: '#/components/schemas/RegistrationOptions'
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/RegisterItem'
+      oneOf:
+        - required: [domain, years]
+        - required: [items]
+
+    RegisterAccepted:
+      type: object
+      description: Returned for asynchronous requests.
+      required: [success, status, jobId]
+      properties:
+        success:
+          type: boolean
+        status:
+          type: string
+          examples: [processing]
+        jobId:
+          type: string
+          description: Pass to `getDomainJob` to track progress.
+
+    RegisterSyncResponse:
+      type: object
+      description: "Returned for requests with `sync: true`."
+      required: [success, result]
+      properties:
+        success:
+          type: boolean
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+
+    ItemResult:
+      type: object
+      description: Outcome for one registration item. `success` can be `false` while the envelope `success` is `true`.
+      required: [success, result]
+      properties:
+        success:
+          type: boolean
+        result:
+          $ref: '#/components/schemas/RegistryResult'
+        data:
+          $ref: '#/components/schemas/DomainOrder'
+
+    DomainOrder:
+      type: object
+      description: A stored reseller order. Fields that apply only to some actions or states are nullable.
+      properties:
+        reseller_order_id:
+          type: string
+        customer_id:
+          type: [string, 'null']
+        reseller_customer_id:
+          type: [string, 'null']
+        domain:
+          type: string
+        action:
+          type: string
+          examples: [createDomain]
+        status:
+          type: string
+          examples: [completed, pending, failed]
+        processed:
+          type: boolean
+          description: Whether the order has finished processing. `false` means it is accepted but not yet complete.
+        price:
+          type: string
+          description: Decimal string, for example `"9.50"`.
+        total_price:
+          type: string
+        years:
+          type: integer
+        domain_created:
+          type: [string, 'null']
+          format: date-time
+        domain_expires:
+          type: [string, 'null']
+          format: date-time
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        payment_status:
+          type: string
+          examples: [completed, pending]
+        transfer_status:
+          type: [string, 'null']
+          description: Present on transfer orders only.
+        ns:
+          type: [array, 'null']
+          items:
+            type: string
+        customer_product_id:
+          type: [string, 'null']
+        order_id:
+          type: [string, 'null']
+        invoice_id:
+          type: [string, 'null']
+        contacts:
+          type: object
+        item_num:
+          type: integer
+        options:
+          type: [object, 'null']
+        whois_privacy:
+          type: [boolean, 'null']
+        locked:
+          type: [boolean, 'null']
+        auto_billing:
+          type: [boolean, 'null']
+        domain_registry_roid:
+          type: [string, 'null']
+
+    Job:
+      type: object
+      required: [jobId, state]
+      properties:
+        jobId:
+          type: string
+        state:
+          type: string
+          description: |
+            Current job state, as reported by the queue. Terminal states are `completed`
+            and `failed`. Any other value means the job is still in progress; do not
+            depend on a specific in-progress value.
+          examples: [completed]
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+        createdAt:
+          type: integer
+          description: Unix time in milliseconds.
+        processedAt:
+          type: integer
+          description: Unix time in milliseconds.
+        finishedAt:
+          type: integer
+          description: Unix time in milliseconds.
+
+    DomainStatusResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/DomainOrder'

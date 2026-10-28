@@ -1,21 +1,16 @@
 {
   "name": "reseller",
-  "version": "1.0.0",
-  "description": "API documentation and other resources for resellers",
-  "main": "index.js",
-  "scripts": {
-  "test:api": "node api/runner.js"
-},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cosmotown1/reseller.git"
-  },
-  "keywords": [],
-  "author": "",
+  "version": "2.25.0",
+  "private": true,
+  "description": "Cosmotown Reseller API reference and documentation tooling",
   "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "axios": "^1.14.0",
-    "p-limit": "^7.3.0"
+  "scripts": {
+    "docs:lint": "redocly lint openapi/openapi.yaml",
+    "docs:build": "redocly build-docs openapi/openapi.yaml -o dist/index.html",
+    "docs:postman": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && openapi2postmanv2 -s openapi/openapi.yaml -o dist/cosmotown-reseller-v2.25.postman_collection.json -p && node -e \"require('fs').statSync('dist/cosmotown-reseller-v2.25.postman_collection.json')\""
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.0.0",
+    "openapi-to-postmanv2": "^6.4.2"
   }
 }

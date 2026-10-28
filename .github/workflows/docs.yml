@@ -1,0 +1,61 @@
+name: docs
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint OpenAPI spec
+        run: npm run docs:lint
+
+      - name: Build reference docs
+        run: npm run docs:build
+
+      - name: Generate Postman collection
+        run: npm run docs:postman
+
+      - name: Upload Postman collection
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-collection
+          path: dist/cosmotown-reseller-v2.25.postman_collection.json
+
+      - name: Fetch base branch
+        if: github.event_name == 'pull_request'
+        run: git fetch --depth=1 origin "$BASE_REF"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+
+      - name: Check for breaking changes
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if ! git cat-file -e "origin/$BASE_REF:openapi/openapi.yaml" 2>/dev/null; then
+            echo "Base branch has no openapi/openapi.yaml yet; skipping breaking-change check."
+            exit 0
+          fi
+          git show "origin/$BASE_REF:openapi/openapi.yaml" > base-openapi.yaml
+          docker run --rm -v "$PWD:/work" -w /work tufin/oasdiff \
+            breaking base-openapi.yaml openapi/openapi.yaml --fail-on ERR
+
+      - name: Check Markdown links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --exclude-path node_modules --exclude-path dist "./**/*.md"
+          fail: true

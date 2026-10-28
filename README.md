@@ -64,6 +64,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
   - [Common result codes](#common-result-codes)
   - [Validation](#validation)
 - [Notes](#notes)
+- [Support](#support)
 - [Changelog](#changelog)
 - [FAQ & Troubleshooting](#faq-troubleshooting)
 
@@ -549,7 +550,7 @@ x-api-key: YOUR_API_KEY
 
 ## Domain Status
 
-> **Recommendation:** For asynchronous registration requests, query the **Job Status API** (`GET /v2.25/domain/jobs/{jobId}`) for queue progress. Use the Domain Status API to fetch the latest stored order state; batch lookup is also available.
+> **Recommendation:** For asynchronous registration requests, query the **Job Status API** (`GET /v2.25/domain/jobs/{jobId}`) for job progress. Use the Domain Status API to fetch the latest stored order state; batch lookup is also available.
 
 #### Request
 
@@ -1210,7 +1211,7 @@ x-api-key: YOUR_API_KEY
 ```
 
 #### Query parameters
-- **domain**: string — *optional*. Return only the specified domain.
+- **domain**: string — *optional*. Return only the specified domain. Exact match only; there is no substring search.
 - **limit**: integer — *optional*. Maximum number of records, default `20`, maximum `100`.
 - **offset**: integer — *optional*. Result offset, default `0`.
 - **sort**: string — *optional*. One of `domain`, `auto_billing`, `whois_privacy`, `locked`, `created`, `expiration_date`. Default `expiration_date`.
@@ -1683,6 +1684,12 @@ A minimal, recommended integration flow for reseller systems:
 5. After processing, fetch domain/order details with `GET /v2.25/domain/status/{domain}`.
 6. Manage contacts and nameservers as needed via contacts and change-nameserver endpoints.
 
+Integration tips:
+
+- Verify connectivity and your key first with `GET /ping`.
+- Store the `jobId` and domain in your own system so you can resume tracking after a restart.
+- A missing job result does not by itself mean the registration failed; check `GET /v2.25/domain/status/{domain}` and the returned order and payment fields.
+
 This README contains full examples and per-endpoint parameter details below.
 
 ### API Design Principles
@@ -1768,7 +1775,7 @@ Some registries require additional fields depending on the TLD.
 
 ## Notes
 
-- For new integrations, use the **v2.25** endpoints, avoid previous version v2 if provided.
+- Use the **v2.25** endpoints for all integrations. Earlier versions are no longer documented.
 - For asynchronous operations, submit the request and use the returned `jobId` with the **Job Status API** (`GET /v2.25/domain/jobs/{jobId}`) to retrieve the operation result.
 - The Domain Status API provides the latest reseller order and domain information after processing.
 - Both single-domain registration requests and the newer `items` array request format are supported for backward compatibility.
@@ -1779,6 +1786,10 @@ Some registries require additional fields depending on the TLD.
   - `technical`
   - `billing`
 
+## Support
+
+For API questions, contact [developer@cosmotown.com](mailto:developer@cosmotown.com) with the endpoint, domain, and response details. Never include your API key.
+
 ## Changelog
 
 For complete release history and migration notes, see [CHANGELOG.md](./changelog.md).
@@ -1786,13 +1797,13 @@ For complete release history and migration notes, see [CHANGELOG.md](./changelog
 ## FAQ & Troubleshooting
 
 - **Q: I received EPP code `2302` (object exists) when registering — what now?**
-  - A: `2302` commonly means the domain already exists at the registry. Clients should treat this as a conflict: do not retry immediately. For async flows the platform may attempt recovery (see internal recovery logic). If you expect the domain to be available, contact Cosmotown support with the domain and the jobId.
+  - A: `2302` commonly means the domain already exists at the registry. Clients should treat this as a conflict: do not retry immediately. If you expect the domain to be available, contact Cosmotown support with the domain and the jobId.
 
 - **Q: I submitted a batch and some items succeeded while others failed — how should I handle this?**
   - A: For sync requests inspect the per-item `result` entries. For async requests poll the job and examine `result` array after sometime.
 
 - **Q: What does the `processed` field mean in responses?**
-  - A: `processed` indicates whether the reseller order has been processed by downstream systems (billing/provisioning). `processed: false` often means the domain/order is accepted but not yet fully handled by downstream workflows.
+  - A: `processed` indicates whether the reseller order has finished processing. `processed: false` means the order was accepted but is not yet complete; check again later.
 
 
 ---
