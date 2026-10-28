@@ -1,7 +1,13 @@
 name: docs-pages
 
-# Manual only until the pilot is approved.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "openapi/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/docs-pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -30,6 +36,9 @@ jobs:
         run: npm run docs:lint
 
       - run: npm run docs:build
+
+      - name: Generate Postman collection
+        run: npm run docs:postman
 
       - uses: actions/upload-pages-artifact@v3
         with:
