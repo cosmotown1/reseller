@@ -20,6 +20,13 @@ curl -H "x-api-key: YOUR_API_KEY" \
   https://cosmotown.com/api/reseller/v2.25/domain/check
 ```
 
+## Docs site and Postman collection
+
+- Browsable reference: https://cosmotown1.github.io/reseller/ (read-only; it does not send API requests).
+- Postman collection: [cosmotown-reseller-v2.25.postman_collection.json](https://cosmotown1.github.io/reseller/cosmotown-reseller-v2.25.postman_collection.json)
+
+To run requests from Postman, import the collection, create an environment with a variable named `apiKey` set to your key, and select that environment. The collection sends the key in the `x-api-key` header and uses the production `baseUrl`.
+
 ## Table of Contents
 
 - [Supported TLDs](#supported-tlds)
