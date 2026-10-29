@@ -1619,10 +1619,10 @@ x-api-key: YOUR_API_KEY
 #### Query parameters
 
 - **domain_name**: string — *optional*. Return only the specified domain's transfer-out records.
-- **reply**: string — *optional*. Filter by `accept` or `reject`. Use `all` to include records with no reply. When omitted, only records with no reply are returned.
-- **limit**: integer — *optional*. Maximum number of records to return.
+- **reply**: string — *optional*. One of `accept`, `reject`, or `all`. `all` includes records with no reply. When omitted, only records with no reply are returned.
+- **limit**: integer — *optional*. Maximum number of records to return. Default `20`, maximum `100`.
 - **offset**: integer — *optional*. Result offset, default `0`.
-- **sort**: string — *optional*. One of `domain_name`, `created`, `updated`, or `status`.
+- **sort**: string — *optional*. One of `domain_name`, `created`, `updated`, `status`, or `reply`. Default `created`.
 - **order**: string — *optional*. `asc` or `desc`. Default `desc`.
 
 #### Example request
@@ -1660,17 +1660,45 @@ x-api-key: YOUR_API_KEY
 }
 ```
 
-A `reply` value of `null` means that the customer has not replied to the confirmation request.
+#### Status values
+
+| Status | Meaning |
+|---|---|
+| `pending` | The transfer-out confirmation has been sent and the customer has not replied yet. |
+| `approved` | The customer replied `accept`. |
+| `rejected` | The customer replied `reject`. |
+| `auto_approved` | No reply was received and the registry auto-complete date has passed, so the transfer was approved automatically. |
+
+Any other stored status is returned exactly as stored.
+
+#### Reply values
+
+| Reply | Meaning |
+|---|---|
+| `accept` | The customer accepted the transfer-out. |
+| `reject` | The customer rejected the transfer-out. |
+| `null` | The customer has not replied to the confirmation request. |
 
 #### Validation errors
 
-An invalid `reply` or `domain_name` value returns HTTP `400` with the standard error envelope:
+An invalid `domain_name` returns HTTP `400` with the error envelope and an error code:
 
 ```json
 {
   "success": false,
   "data": null,
-  "error": "Invalid domain name"
+  "error": "Invalid domain name format",
+  "code": "INVALID_DOMAIN"
+}
+```
+
+An invalid `reply` value returns HTTP `400`:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": "reply must be accept, reject, all, or omitted"
 }
 ```
 
