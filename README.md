@@ -241,7 +241,7 @@ x-api-key: YOUR_API_KEY
 Common request fields (single-item or per-item in `items`):
 
 - **domain**: string — *required*. The fully qualified domain name to register.
-- **idn_language**: string — *optional*. Verisign IDN language tag. Required for IDN (Punycode) registrations handled by Verisign; omit for ordinary ASCII registrations. See the [Verisign IDN registration guide](docs/guides/idn-registration.md) for request examples and supported values.
+- **idn_language**: string — *optional*. Verisign IDN language tag. Required for IDN (Punycode) registrations handled by Verisign; omit for ordinary ASCII registrations. See the [Verisign IDN registration guide](docs/guides/idn-registration.md) for request examples, valid tags, and language-specific restrictions.
 - **years**: integer — *required*. Number of years to register (registry limits may apply).
 - **ns**: array[string] — *optional*. Name servers to set for the domain (e.g., `["ndns1.cosmotown.com", "ndns2.cosmotown.com"]`).
 - **contact_info**: object — *optional*. Contact objects (`registrant`, `administrative`, `technical`, `billing`) with standard contact fields (firstName, lastName, email, phone, address1, city, state, zip, country).

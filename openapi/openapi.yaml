@@ -1802,8 +1802,8 @@ components:
           format: hostname
         idn_language:
           type: string
-          enum: [AZE, BEL, BUL, CHI, GRE, JPN, KOR, KUR, MAC, MOL, POL, RUS, UKR]
-          description: Verisign IDN language tag. Required for Verisign IDN (Punycode) registrations; not needed for ordinary ASCII registrations.
+          enum: [AFR, ALB, ARA, ARG, ARM, ASM, AST, AVE, AWA, AZE, BAK, BAL, BAN, BAQ, BAS, BEL, BEN, BHO, BOS, BUL, BUR, CAR, CAT, CHE, CHI, CHV, COP, COS, CZE, DAN, DIV, DOI, DUT, ENG, EST, FAO, FIJ, FIN, FRE, FRY, GEO, GER, GLE, GLA, GON, GRE, GUJ, HEB, HIN, HUN, ICE, INC, IND, INH, ITA, JAV, JPN, KAS, KAZ, KHM, KIR, KOR, KUR, LAO, LAV, LIT, LTZ, MAC, MAO, MAL, MAY, MLT, MOL, MON, NEP, NOR, ORI, OSS, PAN, PER, POL, POR, PUS, RAJ, RUM, RUS, SAN, SCC, SCR, SIN, SLO, SLV, SMO, SND, SOM, SPA, SRD, SWA, SWE, SYR, TAM, TEL, TGK, THA, TIB, TUR, UKR, URD, UZB, VIE, WEL, YID]
+          description: Verisign IDN language tag. Required for Verisign IDN (Punycode) registrations; not needed for ordinary ASCII registrations. The Verisign IDN guide explains language-specific character and script restrictions.
         years:
           type: integer
           minimum: 1
@@ -1832,8 +1832,8 @@ components:
           format: hostname
         idn_language:
           type: string
-          enum: [AZE, BEL, BUL, CHI, GRE, JPN, KOR, KUR, MAC, MOL, POL, RUS, UKR]
-          description: Verisign IDN language tag. Required for Verisign IDN (Punycode) registrations; not needed for ordinary ASCII registrations.
+          enum: [AFR, ALB, ARA, ARG, ARM, ASM, AST, AVE, AWA, AZE, BAK, BAL, BAN, BAQ, BAS, BEL, BEN, BHO, BOS, BUL, BUR, CAR, CAT, CHE, CHI, CHV, COP, COS, CZE, DAN, DIV, DOI, DUT, ENG, EST, FAO, FIJ, FIN, FRE, FRY, GEO, GER, GLE, GLA, GON, GRE, GUJ, HEB, HIN, HUN, ICE, INC, IND, INH, ITA, JAV, JPN, KAS, KAZ, KHM, KIR, KOR, KUR, LAO, LAV, LIT, LTZ, MAC, MAO, MAL, MAY, MLT, MOL, MON, NEP, NOR, ORI, OSS, PAN, PER, POL, POR, PUS, RAJ, RUM, RUS, SAN, SCC, SCR, SIN, SLO, SLV, SMO, SND, SOM, SPA, SRD, SWA, SWE, SYR, TAM, TEL, TGK, THA, TIB, TUR, UKR, URD, UZB, VIE, WEL, YID]
+          description: Verisign IDN language tag. Required for Verisign IDN (Punycode) registrations; not needed for ordinary ASCII registrations. The Verisign IDN guide explains language-specific character and script restrictions.
         years:
           type: integer
           minimum: 1
