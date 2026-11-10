@@ -161,6 +161,12 @@ paths:
                   domain: example12471.com
                   years: 1
                   sync: true
+              koreanVerisignIdn:
+                summary: Verisign Korean IDN registration
+                value:
+                  domain: xn--jj0b55g3tjca397l20aea895t.com
+                  idn_language: KOR
+                  years: 1
       responses:
         '200':
           description: |
@@ -1066,15 +1072,17 @@ paths:
       tags: [DNS]
       operationId: getDomainDnsSettings
       summary: Get domain DNS settings
-      description: Retrieves the configured DNS settings for a managed domain.
+      description: |
+        Retrieves the configured DNS settings for a managed domain. For an IDN,
+        supply the Punycode domain as the value of the `domain` query parameter.
       parameters:
         - name: domain
           in: query
           required: true
-          description: The domain to retrieve DNS settings for.
+          description: The domain to retrieve DNS settings for. IDNs must be passed in Punycode.
           schema:
             type: string
-            examples: [example12470.com]
+            examples: [example12470.com, xn--v52b19lba372bmqnq7bb2ai7f.com]
       responses:
         '200':
           description: The configured name servers and DNS records.
@@ -1122,7 +1130,8 @@ paths:
       operationId: saveDomainDnsSettings
       summary: Save domain DNS settings
       description: |
-        Saves, deletes, or refreshes DNS settings for a managed domain.
+        Saves, deletes, or refreshes DNS settings for a managed domain. For an
+        IDN, provide the Punycode domain in the `domain` field.
 
         - With `records` and `mode: merge` (default), the records are saved.
         - With `records` and `mode: delete`, only the listed records are deleted.
@@ -1791,6 +1800,10 @@ components:
         domain:
           type: string
           format: hostname
+        idn_language:
+          type: string
+          enum: [AZE, BEL, BUL, CHI, GRE, JPN, KOR, KUR, MAC, MOL, POL, RUS, UKR]
+          description: Verisign IDN language tag. Required for Verisign IDN (Punycode) registrations; not needed for ordinary ASCII registrations.
         years:
           type: integer
           minimum: 1
@@ -1817,6 +1830,10 @@ components:
         domain:
           type: string
           format: hostname
+        idn_language:
+          type: string
+          enum: [AZE, BEL, BUL, CHI, GRE, JPN, KOR, KUR, MAC, MOL, POL, RUS, UKR]
+          description: Verisign IDN language tag. Required for Verisign IDN (Punycode) registrations; not needed for ordinary ASCII registrations.
         years:
           type: integer
           minimum: 1

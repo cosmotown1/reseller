@@ -9,4 +9,12 @@ Store the `jobId` and the domain name so you can resume tracking after a restart
 
 For several domains, send an `items` array. Each item has its own result.
 
+For a Verisign IDN registration, send the domain in Punycode and include
+`idn_language` in the single-domain request or the corresponding `items`
+entry. For example, use `"idn_language": "KOR"` for a Korean IDN. The value is
+required for Verisign IDNs, is not inferred from Punycode, and is not needed
+for ordinary ASCII registrations. See the [Verisign IDN registration guide](idn-registration.md)
+for an example and supported language tags. This does not imply universal IDN
+support across registries.
+
 See [errors](../errors.md) for error handling.
