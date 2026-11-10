@@ -241,13 +241,13 @@ x-api-key: YOUR_API_KEY
 Common request fields (single-item or per-item in `items`):
 
 - **domain**: string — *required*. The fully qualified domain name to register.
+- **idn_language**: string — *optional*. Verisign IDN language tag. Required for IDN (Punycode) registrations handled by Verisign; omit for ordinary ASCII registrations. See the [Verisign IDN registration guide](docs/guides/idn-registration.md) for request examples, valid tags, and language-specific restrictions.
 - **years**: integer — *required*. Number of years to register (registry limits may apply).
 - **ns**: array[string] — *optional*. Name servers to set for the domain (e.g., `["ndns1.cosmotown.com", "ndns2.cosmotown.com"]`).
 - **contact_info**: object — *optional*. Contact objects (`registrant`, `administrative`, `technical`, `billing`) with standard contact fields (firstName, lastName, email, phone, address1, city, state, zip, country).
 - **options**: object — *optional*. Registration options such as `enable_private_whois` and `enable_auto_billing`.
 - **sync**: boolean — *optional*. When `true`, request attempts synchronous processing and returns per-item `result` entries.
 - **items**: array[object] — *optional*. Batch registration format; each item accepts the same fields as above.
-
 
 #### Example response (async)
 
@@ -1292,6 +1292,14 @@ GET /v2.25/domain/dns-settings?domain=example12470.com
 x-api-key: YOUR_API_KEY
 ```
 
+For an IDN, pass its Punycode form as the value of the `domain` parameter:
+
+```http
+GET /v2.25/domain/dns-settings?domain=xn--v52b19lba372bmqnq7bb2ai7f.com
+x-api-key: YOUR_API_KEY
+```
+
+
 #### Query parameters
 - **domain**: string — *required*. Domain to retrieve DNS settings for.
 
@@ -1332,7 +1340,7 @@ Content-Type: application/json
 x-api-key: YOUR_API_KEY
 
 {
-  "domain": "example12470.com",
+  "domain": "xn--v52b19lba372bmqnq7bb2ai7f.com",
   "records": {
     "@": [
       { "type": "A", "value": "1.2.3.4", "ttl": 3600 }
