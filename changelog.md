@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - CI checks for pull requests: spec lint, reference build, breaking-change check against the base branch, and Markdown link check.
 
 ### Changed
+- Documented optional per-status lock and unlock requests, including `clientHold` and Admin Lock behavior.
 - Documented that `GET /v2.25/domain/list` has no substring search. Use `domain` for an exact lookup.
 - Documented the 50-item limit for batch register, renew, and transfer requests, matching the service validation.
 - Documented job `404` and `403` responses, and the `207` and `402` register responses.

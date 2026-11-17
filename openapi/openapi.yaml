@@ -607,9 +607,19 @@ paths:
       tags: [Domains]
       operationId: lockDomain
       summary: Lock a domain
-      description: Locks a domain at the registry to prevent unauthorized updates, transfers, or deletion.
+      description: |
+        Adds client lock statuses to a domain at the registry. If `status` is omitted,
+        all four supported client-prohibited statuses are added. If provided, only the
+        requested statuses are added and other existing statuses are preserved.
+
+        `clientHold` is not supported in the `status` array and is not changed by this
+        endpoint. Its presence alone does not cause the operation to be skipped, though
+        the registry may reject updates under its own rules.
+
+        Admin Lock is separate from EPP statuses. It does not block lock requests, but
+        it prevents unlock requests while enabled.
       requestBody:
-        $ref: '#/components/requestBodies/DomainRequest'
+        $ref: '#/components/requestBodies/DomainLockRequest'
       responses:
         '200':
           description: The domain is locked.
@@ -641,9 +651,19 @@ paths:
       tags: [Domains]
       operationId: unlockDomain
       summary: Unlock a domain
-      description: Unlocks a previously locked domain, allowing updates and transfers.
+      description: |
+        Removes client lock statuses from a domain at the registry. If `status` is
+        omitted, all four supported client-prohibited statuses are removed. If provided,
+        only the requested statuses are removed and other existing statuses are preserved.
+
+        `clientHold` is not supported in the `status` array and is not changed by this
+        endpoint. Its presence alone does not cause the operation to be skipped, though
+        the registry may reject updates under its own rules.
+
+        Admin Lock is separate from EPP statuses. Unlock requests are rejected while
+        Admin Lock is enabled.
       requestBody:
-        $ref: '#/components/requestBodies/DomainRequest'
+        $ref: '#/components/requestBodies/DomainLockRequest'
       responses:
         '200':
           description: The domain is unlocked.
@@ -665,6 +685,17 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: The domain cannot be unlocked because Admin Lock is enabled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+              example:
+                success: false
+                data: null
+                error: The domain is under admin lock.
+                code: DOMAIN_ADMIN_LOCKED
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
@@ -1488,7 +1519,7 @@ components:
         type: integer
 
   requestBodies:
-    DomainRequest:
+    DomainLockRequest:
       required: true
       content:
         application/json:
@@ -1499,6 +1530,21 @@ components:
               domain:
                 type: string
                 examples: [example12470.com]
+              status:
+                type: array
+                description: |
+                  Optional statuses to add or remove. If omitted, all four supported
+                  client-prohibited statuses are used. When supplied, only the listed
+                  statuses are changed. `clientHold` is not supported.
+                items:
+                  type: string
+                  enum:
+                    - clientDeleteProhibited
+                    - clientTransferProhibited
+                    - clientRenewProhibited
+                    - clientUpdateProhibited
+                examples:
+                  - [clientDeleteProhibited, clientTransferProhibited]
 
   responses:
     BadRequest:
@@ -1645,6 +1691,8 @@ components:
                   type: array
                   items:
                     type: object
+        code:
+          type: string
 
     SimpleError:
       type: object
