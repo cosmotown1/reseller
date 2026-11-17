@@ -920,7 +920,9 @@ x-api-key: YOUR_API_KEY
 
 ## Domain Lock
 
-Locks a domain at the registry to prevent unauthorized updates, transfers, or deletion.
+Adds client lock statuses to a domain at the registry. If `status` is omitted, the API
+adds the four supported client-prohibited statuses. If `status` is supplied, only the
+listed statuses are added; other statuses already on the domain are left unchanged.
 
 #### Request
 
@@ -930,12 +932,30 @@ Content-Type: application/json
 x-api-key: YOUR_API_KEY
 
 {
-  "domain": "example12470.com"
+  "domain": "example12470.com",
+  "status": [
+    "clientDeleteProhibited",
+    "clientTransferProhibited"
+  ]
 }
 ```
 
 #### Parameters
 - **domain**: string — *required*. Domain to lock at the registry.
+- **status**: string array — *optional*. Statuses to add. Supported values are
+  `clientDeleteProhibited`, `clientTransferProhibited`, `clientRenewProhibited`, and
+  `clientUpdateProhibited`. If omitted, all four are used. When supplied, only the
+  requested statuses are changed.
+
+#### Common status and Admin Lock behavior
+- `clientHold` is not supported in the `status` array. The lock and unlock APIs do not
+  add or remove it.
+- If the domain already has `clientHold`, that alone does not make the API skip changes
+  to the supported statuses. The registry may still reject an EPP update under its own
+  rules.
+- Admin Lock is a separate account/domain control, not an EPP status. Lock requests are
+  not blocked by Admin Lock. Unlock requests are rejected with HTTP `403` and code
+  `DOMAIN_ADMIN_LOCKED` while Admin Lock is enabled.
 
 
 #### Example response
@@ -960,7 +980,10 @@ x-api-key: YOUR_API_KEY
 
 ## Domain Unlock
 
-Unlocks a previously locked domain, allowing updates and transfers.
+Removes client lock statuses from a domain at the registry. If `status` is omitted, the
+API removes the four supported client-prohibited statuses. If `status` is supplied,
+only the listed statuses are removed; other statuses already on the domain are left
+unchanged.
 
 #### Request
 
@@ -970,12 +993,29 @@ Content-Type: application/json
 x-api-key: YOUR_API_KEY
 
 {
-  "domain": "example12470.com"
+  "domain": "example12470.com",
+  "status": [
+    "clientTransferProhibited"
+  ]
 }
 ```
 
 #### Parameters
 - **domain**: string — *required*. Domain to unlock at the registry.
+- **status**: string array — *optional*. Statuses to remove. Supported values are
+  `clientDeleteProhibited`, `clientTransferProhibited`, `clientRenewProhibited`, and
+  `clientUpdateProhibited`. If omitted, all four are used. When supplied, only the
+  requested statuses are changed.
+
+#### Common status and Admin Lock behavior
+- `clientHold` is not supported in the `status` array. The lock and unlock APIs do not
+  add or remove it.
+- If the domain already has `clientHold`, that alone does not make the API skip changes
+  to the supported statuses. The registry may still reject an EPP update under its own
+  rules.
+- Admin Lock is a separate account/domain control, not an EPP status. Lock requests are
+  not blocked by Admin Lock. Unlock requests are rejected with HTTP `403` and code
+  `DOMAIN_ADMIN_LOCKED` while Admin Lock is enabled.
 
 
 #### Example response
